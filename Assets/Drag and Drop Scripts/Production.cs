@@ -6,7 +6,8 @@ public class Production : MonoBehaviour
 {
     [SerializeField] private Image ProductpreFab;
     [SerializeField] private RectTransform rectTransformProduct;
-    [SerializeField] private Canvas Productcanvas;
+    [SerializeField] private Transform Productcanvas;
+    [SerializeField] private RectTransform trade;
    
     
     private void Awake()
@@ -22,6 +23,8 @@ public class Production : MonoBehaviour
        Instantiate(ProductpreFab, Productcanvas.transform);
         
         rectTransformProduct.SetParent(Productcanvas.transform, true);
-       
+
+        
+
     }
 }

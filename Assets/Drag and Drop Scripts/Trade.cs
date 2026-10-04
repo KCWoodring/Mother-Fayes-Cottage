@@ -3,10 +3,11 @@ using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-public class FoodProcessor : MonoBehaviour, IDropHandler
+public class Trade : MonoBehaviour, IDropHandler
 {
     [SerializeField] private RectTransform recTransformSlot;
     [SerializeField] private Production production;
+    [SerializeField] private RectTransform ObjectSlot;
 
     private void Awake()
     {
@@ -19,10 +20,12 @@ public class FoodProcessor : MonoBehaviour, IDropHandler
         Debug.Log("dropped item");
         if (eventData.pointerDrag != null)
         {
-            eventData.pointerDrag.GetComponent<RectTransform>().anchoredPosition = recTransformSlot.anchoredPosition;
+           
              if (eventData.pointerDrag.CompareTag("Food"))
-            {
-               production.ProduceItem();
+               {
+                eventData.pointerDrag.GetComponent<RectTransform>().anchoredPosition = ObjectSlot.anchoredPosition;
+                production.ProduceItem();
+                
                 Destroy(eventData.pointerDrag.gameObject);
              }
         }
