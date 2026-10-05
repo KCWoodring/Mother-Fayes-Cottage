@@ -8,6 +8,7 @@ TagManager:
   - ItemSlot
   - Knife
   - Food
+  - FoodSpawn
   layers:
   - Default
   - TransparentFX
