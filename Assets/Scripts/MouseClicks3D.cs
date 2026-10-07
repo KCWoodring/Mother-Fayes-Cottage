@@ -11,6 +11,11 @@ public class MouseClicks3D : MonoBehaviour
     InputAction pointAction;
     Animator animator;
     string clickedObjectName;
+    string lastClickedObjectName;
+    GameObject clickedObject;
+    GameObject lastClickedObject;
+
+    public PrepStationManager prepStationManager; // Reference to the PrepStationManager script
 
     // Start is called before the first frame update
     void Start()
@@ -25,7 +30,18 @@ public class MouseClicks3D : MonoBehaviour
     {
         if (clickAction.WasPressedThisFrame())
         {
-            clickedObjectName = GetClickedObject(out RaycastHit hit).name;
+            clickedObject = GetClickedObject(out RaycastHit hit);
+            clickedObjectName = clickedObject.name;
+            Debug.Log("Clicked on: " + clickedObjectName);
+            if ((clickedObjectName == "Pumpkin" || clickedObjectName == "HoneyDew") && !prepStationManager.cuttingActive)
+            {
+                if ("CuttingBoard" == lastClickedObjectName)
+                {
+                    clickedObject.transform.position = lastClickedObject.transform.position + new Vector3(0, 1, -.05f);
+                    prepStationManager.cuttingActive = true;
+                    prepStationManager.CutOne();
+                }
+            }
             if ("AssemblyStation" == clickedObjectName)
             {
                 animator.SetBool("AtCounter", false);
@@ -54,6 +70,8 @@ public class MouseClicks3D : MonoBehaviour
                 animator.SetBool("AtPrep", false);
                 animator.SetBool("AtCook", true);
             }
+            lastClickedObjectName = clickedObjectName;
+            lastClickedObject = clickedObject;
         }
     }
 
