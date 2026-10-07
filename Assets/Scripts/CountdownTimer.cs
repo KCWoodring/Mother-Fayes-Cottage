@@ -1,13 +1,11 @@
 
 using UnityEngine;
 using TMPro;
-using Unity.VisualScripting;
-using System.Reflection.Metadata.Ecma335;
 
 public class CountdownTimer : MonoBehaviour
 {
     [Header("Settings")]
-    public float duration = 60f;
+    public float duration = 180f;
     public bool startOnAwake = false;
     public TMP_Text timerText;
 
