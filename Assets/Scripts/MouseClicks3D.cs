@@ -31,6 +31,7 @@ public class MouseClicks3D : MonoBehaviour
         if (clickAction.WasPressedThisFrame())
         {
             clickedObject = GetClickedObject(out RaycastHit hit);
+            if (clickedObject == null) { return; }
             clickedObjectName = clickedObject.name;
             Debug.Log("Clicked on: " + clickedObjectName);
             if ((clickedObjectName == "Pumpkin" || clickedObjectName == "HoneyDew") && !prepStationManager.cuttingActive)
