@@ -42,6 +42,17 @@ public class MouseClicks3D : MonoBehaviour
                     prepStationManager.CutOne();
                 }
             }
+            if ("Recipe" == clickedObjectName)
+            {
+                if (clickedObject.GetComponent<Animator>().GetBool("Open"))
+                {
+                    clickedObject.GetComponent<Animator>().SetBool("Open", false);
+                }
+                else
+                {
+                    clickedObject.GetComponent<Animator>().SetBool("Open", true);
+                }
+            }
             if ("AssemblyStation" == clickedObjectName)
             {
                 animator.SetBool("AtCounter", false);
