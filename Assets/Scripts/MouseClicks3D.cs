@@ -54,16 +54,8 @@ public class MouseClicks3D : MonoBehaviour
                     clickedObject.GetComponent<Animator>().SetBool("Open", true);
                 }
             }
-            if ("AssemblyStation" == clickedObjectName)
-            {
-                animator.SetBool("AtCounter", false);
-                animator.SetBool("AtPrep", false);
-                animator.SetBool("AtCook", false);
-                animator.SetBool("AtAssembly", true);
-            }
             if ("Counter" == clickedObjectName)
             {
-                animator.SetBool("AtAssembly", false);
                 animator.SetBool("AtPrep", false);
                 animator.SetBool("AtCook", false);
                 animator.SetBool("AtCounter", true);
@@ -71,14 +63,12 @@ public class MouseClicks3D : MonoBehaviour
             if ("PrepStation" == clickedObjectName)
             {
                 animator.SetBool("AtCounter", false);
-                animator.SetBool("AtAssembly", false);
                 animator.SetBool("AtCook", false);
                 animator.SetBool("AtPrep", true);
             }
             if ("CookStation" == clickedObjectName)
             {
                 animator.SetBool("AtCounter", false);
-                animator.SetBool("AtAssembly", false);
                 animator.SetBool("AtPrep", false);
                 animator.SetBool("AtCook", true);
             }
