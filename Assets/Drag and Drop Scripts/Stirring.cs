@@ -1,147 +1,151 @@
-using System.Runtime.ExceptionServices;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Events;
-using UnityEngine.EventSystems;
-using UnityEngine.InputSystem.Processors;
-using UnityEngine.SocialPlatforms.GameCenter;
-using UnityEngine.UIElements;
+using UnityEngine.InputSystem;
+using UnityEngine.UI;
 
-public class Stirring : MonoBehaviour, IPointerUpHandler,IPointerDownHandler, IDragHandler
+public class Stirring : MonoBehaviour
 {
-    public enum StirDirection { Clock, CounterClock}
+    public enum StirDirection { Clock, CounterClock }
 
-    [Header("Refrence Tings")]
-    [SerializeField] private RectTransform Soup;
-    [SerializeField] private Camera camera;
-    [SerializeField] private StirringEvnets stiiringEvents;
+    [SerializeField] private Transform soup;
+    [SerializeField] private Collider potZone;
+    [SerializeField] private Camera cam;
+    [SerializeField] private GameObject arrow;
 
-    [Header("Rotation Tings")]
-    public StirDirection currentDirection;
-    private bool isStirring, compleeted;
-    private float LastAngle;
-    public float TotalRotation;
-    private PointerEventData pointer;
-    public float StirProg;
+    [SerializeField] private float laps = 3f;
+    [SerializeField] private int rounds = 1;
+    [SerializeField, Range(0f, 1f)] private float switchChance = 0.5f;
+    [SerializeField] private StirDirection startDirection = StirDirection.Clock;
+    [SerializeField] private float deadZonePixels = 30f;
+    [SerializeField] private bool debugLogs = true;
 
-    [Header("Modifying Tings")]
-    [SerializeField]private float CenterArea = 5f;
-    [SerializeField] private float VisSpeed;
-    [SerializeField] private float StirRounds;
-    [SerializeField] private float Laps;
-    [SerializeField] private float SwitchChance;
-    [SerializeField] private StirDirection StartDirection = StirDirection.Clock;
-    [SerializeField] private float Penalty;
-    
-    [Header("Events")]
-    public UnityEvent onStirredCompleet;
     public UnityEvent<StirDirection> OnDirectionChange;
     public UnityEvent OnSoupCompleet;
 
-    [Header("Progress Indicators")]
-    public float StirProgress => Mathf.Clamp01(StirProg / (360f * Laps));
-    
-    private int currentRound;
-    public StirDirection CurrentDirection => currentDirection;
-    public int CurrentRound => currentRound;
+    public StirDirection CurrentDirection { get; private set; }
+    public float StirProgress => Mathf.Clamp01(progress / (360f * laps));
+
+    private InputAction clickAction;
+    private InputAction pointAction;
+    private bool canStir, isStirring;
+    private float progress, lastAngle;
+    private int round, lastTenth;
 
     private void Start()
     {
-        currentDirection = StartDirection;
-        OnDirectionChange?.Invoke(currentDirection);
+        clickAction = InputSystem.actions.FindAction("Click");
+        pointAction = InputSystem.actions.FindAction("Point");
+        if (cam == null) cam = Camera.main;
+        if (potZone == null) potZone = GetComponent<Collider>();
+        CurrentDirection = startDirection;
+        OnDirectionChange?.Invoke(CurrentDirection);
+        arrow.SetActive(false);
     }
 
-    public void OnDrag(PointerEventData eventData)
+    public void BeginStirPhase()
     {
-        if (!isStirring || compleeted)
+        arrow.SetActive(true);
+        round = 0;
+        progress = 0f;
+        lastTenth = 0;
+        canStir = true;
+        Debug.Log("Stirring unlocked. Need " + laps + " laps x " + rounds + " round(s). Direction: " + CurrentDirection);
+    }
+
+    private void Update()
+    {
+        Vector2 pos = pointAction.ReadValue<Vector2>();
+        bool pressed = clickAction.WasPressedThisFrame();
+        bool overPot = pressed && potZone.Raycast(cam.ScreenPointToRay(pos), out _, 1000f);
+
+        if (!canStir)
         {
+            if (overPot) Debug.Log("Pressed on pot but stirring is locked (no ingredient added yet).");
             return;
         }
 
-        Vector2 center = GetCenter();
-        if ((eventData.position - center).sqrMagnitude < CenterArea * CenterArea)
+        if (pressed)
         {
-            return;
+            if (overPot)
+            {
+                isStirring = true;
+                lastAngle = GetAngle(pos);
+                Debug.Log("Stir started.");
+            }
+            else
+            {
+                Debug.Log("Press missed the pot zone collider.");
+            }
         }
-       float angle = GetMouseAngle(eventData.position);
-        float Delta = Mathf.DeltaAngle(LastAngle, angle);
-        LastAngle = angle;
-        
-        
 
-        Soup.Rotate(0f, 0f, Delta * VisSpeed);
-
-        bool correctWay = (currentDirection == StirDirection.CounterClock) == Delta > 0f;
-        if (correctWay)
+        if (isStirring && !clickAction.IsPressed())
         {
-            StirProg += Mathf.Abs(Delta);
-        }
-        else
-        {
-            StirProg = Mathf.Max(0f,StirProg - Mathf.Abs(Delta) ); //add *penalty if we want ti
-        }
-        TotalRotation += Delta;
-        if(StirProg >= 360* Laps)
-        {
-            StirringCompleet();
-        }
-    }
-
-    private void StirringCompleet()
-    {
-        currentRound++;
-        StirProg = 0f;
-        onStirredCompleet?.Invoke();
-
-        if(currentRound >= StirRounds)
-        {
-            compleeted = true;
             isStirring = false;
+            Debug.Log("Stir released at " + Mathf.RoundToInt(StirProgress * 100f) + "%.");
+        }
+
+        if (isStirring) Stir(pos);
+    }
+
+    private void Stir(Vector2 pos)
+    {
+        if ((pos - PotScreenPos()).magnitude < deadZonePixels) return;
+
+        float angle = GetAngle(pos);
+        float delta = Mathf.DeltaAngle(lastAngle, angle);
+        lastAngle = angle;
+
+        soup.Rotate(cam.transform.forward, -delta, Space.World);
+
+        bool correct = (CurrentDirection == StirDirection.CounterClock) == (delta > 0f);
+        progress = Mathf.Max(0f, progress + (correct ? Mathf.Abs(delta) : -Mathf.Abs(delta)));
+
+        int tenth = Mathf.FloorToInt(StirProgress * 10f);
+        if (tenth != lastTenth)
+        {
+            lastTenth = tenth;
+            Debug.Log("Progress " + tenth * 10 + "% (" + (correct ? "correct way" : "wrong way") + ", need " + CurrentDirection + ")");
+        }
+
+        if (progress >= 360f * laps) FinishRound();
+    }
+
+    private void FinishRound()
+    {
+        progress = 0f;
+        lastTenth = 0;
+        round++;
+        Debug.Log("Round " + round + "/" + rounds + " finished.");
+
+        if (round >= rounds)
+        {
+            canStir = false;
+            isStirring = false;
+            arrow.SetActive(false);
+            Debug.Log("Stirring complete. Firing OnSoupCompleet.");
             OnSoupCompleet?.Invoke();
             return;
         }
-        if(Random.value < SwitchChance)
+
+        if (Random.value < switchChance)
         {
-            switch (currentDirection)
-            {
-                case StirDirection.CounterClock:
-                    currentDirection = StirDirection.Clock;
-                    break;
-                case StirDirection.Clock:
-                    currentDirection = StirDirection.CounterClock;
-                    break;
-            }
-            
-            OnDirectionChange?.Invoke(currentDirection);
-            stiiringEvents.DirectionChange();
+            CurrentDirection = CurrentDirection == StirDirection.Clock
+                ? StirDirection.CounterClock : StirDirection.Clock;
+            Debug.Log("Direction switched to " + CurrentDirection);
+            OnDirectionChange?.Invoke(CurrentDirection);
         }
     }
 
-    public void OnPointerDown(PointerEventData eventData)
-    {
-        isStirring = true;
-        LastAngle = GetMouseAngle(eventData.position);
-        pointer = eventData;
+    private Vector2 PotScreenPos() => cam.WorldToScreenPoint(soup.position);
 
-    }
-    public void OnPointerUp(PointerEventData eventData)
+    private float GetAngle(Vector2 screenPos)
     {
-        isStirring = false;
-    }
-    
-  
-    private Vector2 GetCenter()
-    {
-        Canvas canvas = Soup.GetComponentInParent<Canvas>();
-        if (canvas != null && canvas.renderMode == RenderMode.ScreenSpaceOverlay)
-        return Soup.position;
-        return camera.WorldToScreenPoint(Soup.position);
-    }
-    private float GetMouseAngle(Vector2 screenPos)
-    {
-        
-        Vector2 toMouse = screenPos - GetCenter();
-        return Mathf.Atan2(toMouse.y, toMouse.x) * Mathf.Rad2Deg;
+        Vector2 v = screenPos - PotScreenPos();
+        return Mathf.Atan2(v.y, v.x) * Mathf.Rad2Deg;
     }
 
+    private void Log(string message)
+    {
+        if (debugLogs) Debug.Log("[Stirring] " + message);
+    }
 }
