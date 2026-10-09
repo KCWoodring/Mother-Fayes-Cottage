@@ -1,7 +1,6 @@
 
-using TMPro;
 using UnityEngine;
-using UnityEngine.SceneManagement;
+using TMPro;
 
 public class CountdownTimer : MonoBehaviour
 {
@@ -35,7 +34,7 @@ public class CountdownTimer : MonoBehaviour
     }
     void TimerFinished()
     {
-        SceneManager.LoadScene("GameOverScene");
+        Debug.Log("Timer finished!");
     }
     public void StartTimer()
     {

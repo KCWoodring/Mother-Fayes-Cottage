@@ -34,19 +34,15 @@ public class MouseClicks3D : MonoBehaviour
             if (clickedObject == null) { return; }
             clickedObjectName = clickedObject.name;
             Debug.Log("Clicked on: " + clickedObjectName);
-
-            if (!prepStationManager.cuttingActive)
+            if ((clickedObjectName == "Pumpkin" || clickedObjectName == "HoneyDew") && !prepStationManager.cuttingActive)
             {
-                if (IsCuttable(clickedObjectName) && lastClickedObjectName == "CuttingBoard")
+                if ("CuttingBoard" == lastClickedObjectName)
                 {
-                    PlaceOnBoard(clickedObject, lastClickedObject);
-                }
-                else if (clickedObjectName == "CuttingBoard" && IsCuttable(lastClickedObjectName))
-                {
-                    PlaceOnBoard(lastClickedObject, clickedObject);
+                    clickedObject.transform.position = lastClickedObject.transform.position + new Vector3(0, 1, -.05f);
+                    prepStationManager.cuttingActive = true;
+                    prepStationManager.CutOne();
                 }
             }
-
             if ("Recipe" == clickedObjectName)
             {
                 if (clickedObject.GetComponent<Animator>().GetBool("Open"))
@@ -79,20 +75,6 @@ public class MouseClicks3D : MonoBehaviour
             lastClickedObjectName = clickedObjectName;
             lastClickedObject = clickedObject;
         }
-    }
-
-    bool IsCuttable(string objectName)
-    {
-        return objectName == "Pumpkin" || objectName == "HoneyDew";
-    }
-
-    void PlaceOnBoard(GameObject item, GameObject board)
-    {
-        item.transform.position = board.transform.position + new Vector3(0, 1, -.05f);
-        prepStationManager.cuttingActive = true;
-
-        if (item.name == "Pumpkin") prepStationManager.SelectPumpkinToCut();
-        else prepStationManager.SelectHoneyDewToCut();
     }
 
     GameObject GetClickedObject(out RaycastHit hit)

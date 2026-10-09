@@ -19,9 +19,5 @@ public class CutController : MonoBehaviour
             lineRenderer.SetPosition(i, points[i].position);
         }
     }
-    public void ClearLine()
-    {
-        lineRenderer.positionCount = 0;
-    }   
 
 }
