@@ -14,6 +14,8 @@ public class MouseClicks3D : MonoBehaviour
     string lastClickedObjectName;
     GameObject clickedObject;
     GameObject lastClickedObject;
+    
+    public GameObject puppy;
 
     public PrepStationManager prepStationManager; // Reference to the PrepStationManager script
 
@@ -58,6 +60,11 @@ public class MouseClicks3D : MonoBehaviour
                     clickedObject.GetComponent<Animator>().SetBool("Open", true);
                 }
             }
+            if ("Toy" == clickedObjectName)
+            {
+                puppy.GetComponent<Animator>().SetBool("GettingAttention", false);
+            }
+            
             if ("Counter" == clickedObjectName)
             {
                 animator.SetBool("AtPrep", false);
