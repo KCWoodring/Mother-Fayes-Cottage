@@ -9,9 +9,6 @@ TagManager:
   - Knife
   - Food
   - FoodSpawn
-  - Pumpkin
-  - HoneyDew
-  - Blender
   layers:
   - Default
   - TransparentFX
