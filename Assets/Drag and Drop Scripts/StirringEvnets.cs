@@ -4,26 +4,42 @@ using static Stirring;
 
 public class StirringEvnets : MonoBehaviour
 {
-    [SerializeField] Image Arrow;
-    //[SerializeField] SpriteRenderer Arrow;
-    [SerializeField] Sprite CounterClock;
-    [SerializeField] Sprite Clock;
-    [SerializeField] Stirring stirring;
+    [SerializeField] private Stirring stirring;
+    [SerializeField] private Renderer arrow;
+    [SerializeField] private Color clockColor = Color.red;
+    [SerializeField] private Color counterClockColor = Color.blue;
+    [SerializeField] private bool flipForCounterClock = true;
 
+    private Vector3 baseScale;
+    private MaterialPropertyBlock block;
 
+    private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
+    private static readonly int ColorId = Shader.PropertyToID("_Color");
 
-    public void DirectionChange()
+    private void Awake()
     {
+        block = new MaterialPropertyBlock();
+        baseScale = arrow.transform.localScale;
+    }
 
-        if (stirring.CurrentDirection == StirDirection.Clock)
+    private void OnEnable() { stirring.OnDirectionChange.AddListener(DirectionChange); }
+    private void OnDisable() { stirring.OnDirectionChange.RemoveListener(DirectionChange); }
+
+    public void DirectionChange(StirDirection direction)
+    {
+        bool clock = direction == StirDirection.Clock;
+        Color color = clock ? clockColor : counterClockColor;
+
+        arrow.GetPropertyBlock(block);
+        block.SetColor(BaseColorId, color);
+        block.SetColor(ColorId, color);
+        arrow.SetPropertyBlock(block);
+
+        if (flipForCounterClock)
         {
-            Arrow.color = Color.red;
-            //Arrow.sprite = Clock;
-        }
-        if(stirring.CurrentDirection == StirDirection.CounterClock)
-        {
-            Arrow.color = Color.blue;
-            //Arrow.sprite = CounterClock;
+            Vector3 s = baseScale;
+            if (!clock) s.x = -s.x;
+            arrow.transform.localScale = s;
         }
     }
 }
