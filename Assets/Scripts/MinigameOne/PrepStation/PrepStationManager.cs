@@ -23,17 +23,19 @@ public class PrepStationManager : MonoBehaviour
     public Vector3 cutThreeEndPoint;
     public Vector3 cutFourStartPoint;
     public Vector3 cutFourEndPoint;
-    public bool startedCut = false;
 
+    public bool startedCut = false;
     public bool pumpkinInBlender = false;
     public bool honeyDewInBlender = false;
     private bool isCuttingPumpkin = false;
     private bool isCuttingHoneyDew = false;
+    public bool BlenderNeedsAttention => (cuttingActive && cutAmount == 3) || pumpkinInBlender || honeyDewInBlender;
 
     private float cutAmount = 0;
 
     [SerializeField] private Transform[] points;
     [SerializeField] private CutController cutController;
+    [SerializeField] private CookingManager cookingManager;
 
     InputAction clickAction;
     InputAction pointAction;
@@ -64,6 +66,8 @@ public class PrepStationManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        HandleCutDrag();
+
         if (!clickAction.WasPressedThisFrame()) return;
 
         Ray ray = Camera.main.ScreenPointToRay(pointAction.ReadValue<Vector2>());
@@ -78,6 +82,8 @@ public class PrepStationManager : MonoBehaviour
             pumpkin.transform.position = finalPumpkinTransform;
             pumpkinInBlender = false;
             Debug.Log("Pumpkin puree successfully moved to final location!");
+
+            if (cookingManager != null) cookingManager.RefreshCurrentStepDrag();
             return;
         }
         if (clickedObjectName == "HoneyDewPuree" && honeyDewInBlender)
@@ -85,134 +91,117 @@ public class PrepStationManager : MonoBehaviour
             honeyDew.transform.position = finalHoneyDewTransform;
             honeyDewInBlender = false;
             Debug.Log("HoneyDew puree successfully moved to final location!");
+
+            if (cookingManager != null) cookingManager.RefreshCurrentStepDrag();
             return;
         }
-        if (cuttingActive)
+    }
+    private void CompleteCut()
+    {
+        if (cutAmount == 0)
         {
-            if (cutAmount == 3)
+            if (isCuttingPumpkin)
             {
-                if (hit.collider != null && hit.collider.CompareTag("Pumpkin") && honeyDewInBlender == false)
+                pumpkin.GetComponent<MeshRenderer>().material = halvedPumpkinMaterial;
+                if (cuttingSoundP != null && audioSource != null)
                 {
-                    pumpkin.transform.position = new Vector3(blender.transform.position.x, blender.transform.position.y + 0.5f, blender.transform.position.z - 0.1f);
-                    pumpkin.GetComponent<MeshRenderer>().material = pumpkinPuree;
-                    pumpkin.name = "PumpkinPuree"; // Renames it so name-check works next time
-                    if (blenderSound != null && audioSource != null)
-                    {
-                        Debug.Log("Sound");
-                        AudioSource.PlayClipAtPoint(blenderSound, Camera.main.transform.position, 1.0f);
-                    }
-                    pumpkinInBlender = true;
-                }
-                else if (hit.collider != null && hit.collider.CompareTag("HoneyDew") && pumpkinInBlender == false)
-                {
-                    honeyDew.transform.position = new Vector3(blender.transform.position.x, blender.transform.position.y + 0.5f, blender.transform.position.z - 0.1f);
-                    honeyDew.GetComponent<MeshRenderer>().material = honeyDewPuree;
-                    honeyDew.name = "HoneyDewPuree"; // Renames it so name-check works next time
-                    if (blenderSound != null && audioSource != null)
-                    {
-                        Debug.Log("Sound");
-                        AudioSource.PlayClipAtPoint(blenderSound, Camera.main.transform.position, 1.0f);
-                    }
-                    honeyDewInBlender = true;
-                }
-                else
-                {
-                    return;
-                }
-
-                cuttingActive = false;
-                cutLine.SetActive(false);
-                cutController.ClearLine();
-                cutAmount = 0;
-            }
-            else if (!startedCut)
-            {
-                if (Vector3.Distance(startCut.transform.position, hit.point) < 1f)
-                {
-                    startedCut = true;
+                    Debug.Log("Sound");
+                    AudioSource.PlayClipAtPoint(cuttingSoundP, Camera.main.transform.position, 1.0f);
                 }
             }
             else
             {
-                if (Vector3.Distance(endCut.transform.position, hit.point) < 1f)
+                honeyDew.GetComponent<MeshRenderer>().material = halvedHoneyDewMaterial;
+                if (cuttingSoundHD != null && audioSource != null)
                 {
-                    startedCut = false;
-                    if (cutAmount == 0)
-                    {
-                        if (isCuttingPumpkin)
-                        {
-                            pumpkin.GetComponent<MeshRenderer>().material = halvedPumpkinMaterial;
-                            if (cuttingSoundP != null && audioSource != null)
-                            {
-                                Debug.Log("Sound");
-                                AudioSource.PlayClipAtPoint(cuttingSoundP, Camera.main.transform.position, 1.0f);
-                            }
-                        }
-                        else
-                        {
-                            honeyDew.GetComponent<MeshRenderer>().material = halvedHoneyDewMaterial;
-                            if (cuttingSoundHD != null && audioSource != null)
-                            {
-                                Debug.Log("Sound");
-                                AudioSource.PlayClipAtPoint(cuttingSoundHD, Camera.main.transform.position, 1.0f);
-                            }
-                        }
-                        cutAmount = 1;
-                        CutTwo();
-                    }
-                    else if (cutAmount == 1)
-                    {
-                        if (isCuttingPumpkin)
-                        {
-                            pumpkin.GetComponent<MeshRenderer>().material = quarterPumpkinMaterial;
-                            if (cuttingSoundP != null && audioSource != null)
-                            {
-                                Debug.Log("Sound");
-                                AudioSource.PlayClipAtPoint(cuttingSoundP, Camera.main.transform.position, 1.0f);
-                            }
-                        }
-                        else
-                        {
-                            honeyDew.GetComponent<MeshRenderer>().material = quarterHoneyDewMaterial;
-                            if (cuttingSoundHD != null && audioSource != null)
-                            {
-                                Debug.Log("Sound");
-                                AudioSource.PlayClipAtPoint(cuttingSoundHD, Camera.main.transform.position, 1.0f);
-                            }
-                        }
-
-                        cutAmount = 2;
-                        CutThree();
-                    }
-                    else if (cutAmount == 2)
-                    {
-                        if (isCuttingPumpkin)
-                        {
-                            pumpkin.GetComponent<MeshRenderer>().material = eighthPumpkinMaterial;
-                            if (cuttingSoundP != null && audioSource != null)
-                            {
-                                Debug.Log("Sound");
-                                AudioSource.PlayClipAtPoint(cuttingSoundP, Camera.main.transform.position, 1.0f);
-                            }
-                        }
-                        else
-                        {
-                            honeyDew.GetComponent<MeshRenderer>().material = eighthHoneyDewMaterial;
-                            if (cuttingSoundHD != null && audioSource != null)
-                            {
-                                Debug.Log("Sound");
-                                AudioSource.PlayClipAtPoint(cuttingSoundHD, Camera.main.transform.position, 1.0f);
-                            }
-                        }
-                        cutAmount = 3;
-                        if (cutLine != null)
-                        {
-                            CutController lineCtrl = cutLine.GetComponent<CutController>();
-                            if (lineCtrl != null) lineCtrl.ClearLine();
-                        }
-                    }
+                    Debug.Log("Sound");
+                    AudioSource.PlayClipAtPoint(cuttingSoundHD, Camera.main.transform.position, 1.0f);
                 }
             }
+            cutAmount = 1;
+            CutTwo();
+        }
+        else if (cutAmount == 1)
+        {
+            if (isCuttingPumpkin)
+            {
+                pumpkin.GetComponent<MeshRenderer>().material = quarterPumpkinMaterial;
+                if (cuttingSoundP != null && audioSource != null)
+                {
+                    Debug.Log("Sound");
+                    AudioSource.PlayClipAtPoint(cuttingSoundP, Camera.main.transform.position, 1.0f);
+                }
+            }
+            else
+            {
+                honeyDew.GetComponent<MeshRenderer>().material = quarterHoneyDewMaterial;
+                if (cuttingSoundHD != null && audioSource != null)
+                {
+                    Debug.Log("Sound");
+                    AudioSource.PlayClipAtPoint(cuttingSoundHD, Camera.main.transform.position, 1.0f);
+                }
+            }
+
+            cutAmount = 2;
+            CutThree();
+        }
+        else if (cutAmount == 2)
+        {
+            if (isCuttingPumpkin)
+            {
+                pumpkin.GetComponent<MeshRenderer>().material = eighthPumpkinMaterial;
+                if (cuttingSoundP != null && audioSource != null)
+                {
+                    Debug.Log("Sound");
+                    AudioSource.PlayClipAtPoint(cuttingSoundP, Camera.main.transform.position, 1.0f);
+                }
+            }
+            else
+            {
+                honeyDew.GetComponent<MeshRenderer>().material = eighthHoneyDewMaterial;
+                if (cuttingSoundHD != null && audioSource != null)
+                {
+                    Debug.Log("Sound");
+                    AudioSource.PlayClipAtPoint(cuttingSoundHD, Camera.main.transform.position, 1.0f);
+                }
+            }
+            cutAmount = 3;
+            if (cutLine != null)
+            {
+                CutController lineCtrl = cutLine.GetComponent<CutController>();
+                if (lineCtrl != null) lineCtrl.ClearLine();
+            }
+        }
+    }
+    private void HandleCutDrag()
+    {
+        if (!cuttingActive || cutAmount == 3)
+        {
+            startedCut = false;
+            return;
+        }
+
+        Ray ray = Camera.main.ScreenPointToRay(pointAction.ReadValue<Vector2>());
+        bool hasHit = Physics.Raycast(ray, out RaycastHit hit);
+
+        if (clickAction.WasPressedThisFrame())
+        {
+            startedCut = hasHit && Vector3.Distance(startCut.transform.position, hit.point) < 1f;
+            return;
+        }
+
+        if (!startedCut) return;
+
+        if (!clickAction.IsPressed())
+        {
+            startedCut = false;
+            return;
+        }
+
+        if (hasHit && Vector3.Distance(endCut.transform.position, hit.point) < 1f)
+        {
+            startedCut = false;
+            CompleteCut();
         }
     }
     public void SelectPumpkinToCut()
@@ -244,5 +233,44 @@ public class PrepStationManager : MonoBehaviour
     {
         cutLine.SetActive(true);
         cutController.SetUpLine(points);
+    }
+    public bool CanBlend(bool pumpkinItem)
+    {
+        if (!cuttingActive || cutAmount != 3) return false;
+        if (isCuttingPumpkin != pumpkinItem) return false;
+        return pumpkinItem ? !honeyDewInBlender : !pumpkinInBlender;
+    }
+
+    public void SendToBlender(bool pumpkinItem)
+    {
+        if (!CanBlend(pumpkinItem)) return;
+
+        Vector3 blenderSpot = new Vector3(blender.transform.position.x, blender.transform.position.y + 0.5f, blender.transform.position.z - 0.1f);
+
+        if (pumpkinItem)
+        {
+            pumpkin.transform.position = blenderSpot;
+            pumpkin.GetComponent<MeshRenderer>().material = pumpkinPuree;
+            pumpkin.name = "PumpkinPuree";
+            pumpkinInBlender = true;
+        }
+        else
+        {
+            honeyDew.transform.position = blenderSpot;
+            honeyDew.GetComponent<MeshRenderer>().material = honeyDewPuree;
+            honeyDew.name = "HoneyDewPuree";
+            honeyDewInBlender = true;
+        }
+
+        if (blenderSound != null && audioSource != null)
+        {
+            Debug.Log("Sound");
+            AudioSource.PlayClipAtPoint(blenderSound, Camera.main.transform.position, 1.0f);
+        }
+
+        cuttingActive = false;
+        cutLine.SetActive(false);
+        cutController.ClearLine();
+        cutAmount = 0;
     }
 }

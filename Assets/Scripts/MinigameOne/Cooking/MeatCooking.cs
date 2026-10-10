@@ -82,7 +82,6 @@ public class MeatCooking : MonoBehaviour
     public void SendToPot()
     {
         ApplyState(CookState.Raw);
-        StartCooking();
     }
 
     public void SetColor(Color color)

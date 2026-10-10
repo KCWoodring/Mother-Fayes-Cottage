@@ -28,6 +28,8 @@ public class CookingManager : MonoBehaviour
 
     public bool IsFinished => stepIndex >= steps.Count;
 
+    [SerializeField] private PrepStationManager prepStationManager;
+
     private void Awake()
     {
         foreach (Step step in steps)
@@ -58,6 +60,7 @@ public class CookingManager : MonoBehaviour
         if (!CanAccept(ingredient)) return;
 
         added.Add(ingredient);
+        SetFlash(ingredient, false);
         onIngredientAdded?.Invoke();
 
         Step step = steps[stepIndex];
@@ -91,15 +94,58 @@ public class CookingManager : MonoBehaviour
 
     private void SetStepObjects(Step step, bool on)
     {
-        foreach (GameObject go in step.ingredientObjects)
+        foreach (GameObject gameObject in step.ingredientObjects)
         {
-            if (go == null) continue;
+            if (gameObject == null) continue;
 
-            RiceCookerDrag ghostDrag = go.GetComponent<RiceCookerDrag>();
+            RiceCookerDrag ghostDrag = gameObject.GetComponent<RiceCookerDrag>();
             if (ghostDrag != null) ghostDrag.enabled = on;
 
-            DragFruit fruitDrag = go.GetComponent<DragFruit>();
-            if (fruitDrag != null) fruitDrag.enabled = on;
+            DragFruit fruitDrag = gameObject.GetComponent<DragFruit>();
+            if (fruitDrag != null)
+            {
+                bool shouldBeOn = on;
+
+                if (on && prepStationManager != null)
+                {
+                    bool isPumpkin = (gameObject == prepStationManager.pumpkin || gameObject.name.Contains("Pumpkin"));
+                    bool isHoneyDew = (gameObject == prepStationManager.honeyDew || gameObject.name.Contains("HoneyDew"));
+
+                    if (isPumpkin)
+                    {
+                        if (prepStationManager.pumpkinInBlender || gameObject.name == "Pumpkin")
+                        {
+                            shouldBeOn = false;
+                        }
+                    }
+                    if (isHoneyDew)
+                    {
+                        if (prepStationManager.honeyDewInBlender || gameObject.name == "HoneyDew")
+                        {
+                            shouldBeOn = false;
+                        }
+                    }
+                }
+
+                fruitDrag.enabled = shouldBeOn;
+            }
+
+            SetFlash(gameObject, on);
         }
+    }
+    public void RefreshCurrentStepDrag()
+    {
+        if (!started || IsFinished || waitingForStir) return;
+        SetStepObjects(steps[stepIndex], true);
+    }
+    private void SetFlash(GameObject gameObject, bool on)
+    {
+        FlashTint flash = gameObject.GetComponent<FlashTint>();
+        if (flash == null)
+        {
+            if (!on) return;
+            flash = gameObject.AddComponent<FlashTint>();
+        }
+        flash.enabled = on;
     }
 }
