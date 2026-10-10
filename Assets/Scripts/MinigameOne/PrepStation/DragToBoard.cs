@@ -1,50 +1,45 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class MeatToPot : MonoBehaviour
+public class DragToBoard : MonoBehaviour
 {
-    [SerializeField] private Pot pot;
-    [SerializeField] private Collider dropZone;
+    [SerializeField] private PrepStationManager prepStationManager;
+    [SerializeField] private Collider boardCollider;
     [SerializeField] private Camera cam;
     [SerializeField] private float hoverOffset = 0.5f;
+    [SerializeField] private bool isPumpkin = true;
 
     private InputAction clickAction;
     private InputAction pointAction;
     private Collider source;
-    private Animator camAnimator;
-
     private bool dragging;
-    private bool placed;
     private Vector3 startPosition;
     private float depth;
 
-
-    void Start()
+    private void Start()
     {
         clickAction = InputSystem.actions.FindAction("Click");
         pointAction = InputSystem.actions.FindAction("Point");
         source = GetComponent<Collider>();
-        camAnimator = cam.GetComponent<Animator>();
         if (cam == null) cam = Camera.main;
-        if (dropZone == null) dropZone = pot.GetComponent<Collider>();
     }
 
-    void Update()
+    private void Update()
     {
-        if (placed) return;
-
-        if (!camAnimator.GetBool("AtCook"))
-        {
-            if (dragging) CancelDrag();
-            return;
-        }
-
         Vector2 position = pointAction.ReadValue<Vector2>();
 
         if (!dragging)
         {
+            if (!prepStationManager.enabled || prepStationManager.cuttingActive) return;
+
             if (clickAction.WasPressedThisFrame() && source.Raycast(cam.ScreenPointToRay(position), out _, 1000f))
                 StartDrag(position);
+            return;
+        }
+
+        if (!prepStationManager.enabled)
+        {
+            CancelDrag();
             return;
         }
 
@@ -58,17 +53,11 @@ public class MeatToPot : MonoBehaviour
         startPosition = transform.position;
 
         float selfDepth = Vector3.Dot(transform.position - cam.transform.position, cam.transform.forward);
-        float dropDepth = Vector3.Dot(dropZone.bounds.center - cam.transform.position, cam.transform.forward);
-        depth = Mathf.Min(selfDepth, dropDepth) - hoverOffset;
+        float boardDepth = Vector3.Dot(boardCollider.bounds.center - cam.transform.position, cam.transform.forward);
+        depth = Mathf.Min(selfDepth, boardDepth) - hoverOffset;
 
         source.enabled = false;
         MoveToCursor(position);
-    }
-    private void CancelDrag()
-    {
-        dragging = false;
-        source.enabled = true;
-        transform.position = startPosition;
     }
 
     private void EndDrag(Vector2 position)
@@ -76,26 +65,25 @@ public class MeatToPot : MonoBehaviour
         dragging = false;
         source.enabled = true;
 
-        if (dropZone.Raycast(cam.ScreenPointToRay(position), out _, 1000f))
+        if (boardCollider.Raycast(cam.ScreenPointToRay(position), out _, 1000f))
         {
-            pot.PlaceMeat(gameObject);
+            transform.position = boardCollider.transform.position + new Vector3(0, 1, -.05f);
+            prepStationManager.cuttingActive = true;
 
-            MeatCooking cooking = GetComponent<MeatCooking>();
-            if (cooking != null)
-            {
-                cooking.SendToPot();
-            }
+            if (isPumpkin) prepStationManager.SelectPumpkinToCut();
+            else prepStationManager.SelectHoneyDewToCut();
 
-            MeatChopping chopping = GetComponent<MeatChopping>();
-            if (chopping != null)
-            {
-                chopping.canChop = true;
-            }
-
-            placed = true;
+            enabled = false;
             return;
         }
 
+        transform.position = startPosition;
+    }
+
+    private void CancelDrag()
+    {
+        dragging = false;
+        source.enabled = true;
         transform.position = startPosition;
     }
 

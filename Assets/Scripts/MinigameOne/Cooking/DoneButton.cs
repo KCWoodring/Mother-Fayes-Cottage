@@ -9,10 +9,12 @@ public class DoneButton : MonoBehaviour
     [SerializeField] private PotMixtures potMixtures;
     [SerializeField] private CookingManager cookingManager;
     [SerializeField] private TMP_Text label;
+    [SerializeField] private GameObject meatTimer;
     [SerializeField] private Color idleColor = Color.white;
     [SerializeField] private Color flashColor = Color.green;
     [SerializeField] private float flashSpeed = 2f;
     [SerializeField] private string victorySceneName = "WinScene";
+
 
     private InputAction clickAction;
     private InputAction pointAction;
@@ -68,6 +70,8 @@ public class DoneButton : MonoBehaviour
         {
             potMixtures.ShowStage(0);
             cookingManager.BeginRecipe();
+            meatTimer.SetActive(false);
+            meatCooking.gameObject.SetActive(false);
         }
     }
 }

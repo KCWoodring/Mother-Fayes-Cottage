@@ -11,6 +11,13 @@ public class Stirring : MonoBehaviour
     [SerializeField] private Collider potZone;
     [SerializeField] private Camera cam;
     [SerializeField] private GameObject arrow;
+    [SerializeField] private Animator cameraAnimator;
+
+    [SerializeField] private float zoomDelay = 1.0f;
+
+    [SerializeField] private AudioSource audioSource;
+    [SerializeField] private AudioClip stirSound;
+
 
     [SerializeField] private float laps = 3f;
     [SerializeField] private int rounds = 1;
@@ -30,6 +37,9 @@ public class Stirring : MonoBehaviour
     private bool canStir, isStirring;
     private float progress, lastAngle;
     private int round, lastTenth;
+
+    private float zoomTimer = 0f;
+    private bool wasAtCook = false;
 
     private void Start()
     {
@@ -54,6 +64,35 @@ public class Stirring : MonoBehaviour
 
     private void Update()
     {
+        bool isAtCook = cameraAnimator != null && cameraAnimator.GetBool("AtCook");
+
+        if (isAtCook && !wasAtCook)
+        {
+            zoomTimer = zoomDelay;
+        }
+        wasAtCook = isAtCook;
+
+        if (isAtCook && zoomTimer > 0f)
+        {
+            zoomTimer -= Time.deltaTime;
+        }
+
+        if (arrow != null)
+        {
+            arrow.SetActive(canStir && isAtCook && zoomTimer <= 0f);
+        }
+
+        if (!canStir || !isAtCook || zoomTimer > 0f)
+        {
+            if (isStirring)
+            {
+                StopStirringAudio();
+                isStirring = false;
+                Debug.Log("Stir cancelled due to leaving cook zone or zooming.");
+            }
+            return;
+        }
+
         Vector2 pos = pointAction.ReadValue<Vector2>();
         bool pressed = clickAction.WasPressedThisFrame();
         bool overPot = pressed && potZone.Raycast(cam.ScreenPointToRay(pos), out _, 1000f);
@@ -80,6 +119,7 @@ public class Stirring : MonoBehaviour
 
         if (isStirring && !clickAction.IsPressed())
         {
+            StopStirringAudio();
             isStirring = false;
             Debug.Log("Stir released at " + Mathf.RoundToInt(StirProgress * 100f) + "%.");
         }
@@ -89,7 +129,11 @@ public class Stirring : MonoBehaviour
 
     private void Stir(Vector2 pos)
     {
-        if ((pos - PotScreenPos()).magnitude < deadZonePixels) return;
+        if ((pos - PotScreenPos()).magnitude < deadZonePixels)
+        {
+            StopStirringAudio();
+            return;
+        }
 
         float angle = GetAngle(pos);
         float delta = Mathf.DeltaAngle(lastAngle, angle);
@@ -100,6 +144,15 @@ public class Stirring : MonoBehaviour
         bool correct = (CurrentDirection == StirDirection.CounterClock) == (delta > 0f);
         progress = Mathf.Max(0f, progress + (correct ? Mathf.Abs(delta) : -Mathf.Abs(delta)));
 
+        if (correct)
+        {
+            PlayStirringAudio();
+        }
+        else
+        {
+            StopStirringAudio();
+        }
+
         int tenth = Mathf.FloorToInt(StirProgress * 10f);
         if (tenth != lastTenth)
         {
@@ -109,9 +162,30 @@ public class Stirring : MonoBehaviour
 
         if (progress >= 360f * laps) FinishRound();
     }
+    private void PlayStirringAudio()
+    {
+        if (audioSource != null && stirSound != null)
+        {
+            if (!audioSource.isPlaying || audioSource.clip != stirSound)
+            {
+                audioSource.clip = stirSound;
+                audioSource.loop = true;
+                audioSource.Play();
+            }
+        }
+    }
+
+    private void StopStirringAudio()
+    {
+        if (audioSource != null && audioSource.isPlaying && audioSource.clip == stirSound)
+        {
+            audioSource.Stop();
+        }
+    }
 
     private void FinishRound()
     {
+        StopStirringAudio();
         progress = 0f;
         lastTenth = 0;
         round++;
