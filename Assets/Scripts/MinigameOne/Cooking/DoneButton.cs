@@ -35,6 +35,7 @@ public class DoneButton : MonoBehaviour
         UpdateFlash();
 
         if (!clickAction.WasPressedThisFrame()) return;
+        if (!IsDoneReady()) return;
 
         Ray ray = cam.ScreenPointToRay(pointAction.ReadValue<Vector2>());
         if (Physics.Raycast(ray, out RaycastHit hit) && hit.collider == buttonCollider)
@@ -45,10 +46,7 @@ public class DoneButton : MonoBehaviour
     {
         if (label == null) return;
 
-        bool meatReady = meatCooking.isCooking && meatCooking.state == MeatCooking.CookState.Brown;
-        bool shouldFlash = meatReady || cookingManager.IsFinished;
-
-        if (shouldFlash)
+        if (IsDoneReady())
             label.color = Color.Lerp(idleColor, flashColor, Mathf.PingPong(Time.time * flashSpeed, 1f));
         else
             label.color = idleColor;
@@ -62,16 +60,15 @@ public class DoneButton : MonoBehaviour
             return;
         }
 
-        if (!meatCooking.isCooking) return;
-
         meatCooking.PauseCooking();
-
-        if (meatCooking.state == MeatCooking.CookState.Brown)
-        {
-            potMixtures.ShowStage(0);
-            cookingManager.BeginRecipe();
-            meatTimer.SetActive(false);
-            meatCooking.gameObject.SetActive(false);
-        }
+        potMixtures.ShowStage(0);
+        cookingManager.BeginRecipe();
+        meatTimer.SetActive(false);
+        meatCooking.gameObject.SetActive(false);
+    }
+    private bool IsDoneReady()
+    {
+        bool meatReady = meatCooking.isCooking && meatCooking.state == MeatCooking.CookState.Brown;
+        return meatReady || cookingManager.IsFinished;
     }
 }

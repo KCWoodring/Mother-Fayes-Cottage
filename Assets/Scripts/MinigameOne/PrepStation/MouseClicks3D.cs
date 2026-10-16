@@ -22,6 +22,7 @@ public class MouseClicks3D : MonoBehaviour
     Animator recipeAnimator;
 
     public PrepStationManager prepStationManager; // Reference to the PrepStationManager script
+    public UIManager uiManager;
 
     // Start is called before the first frame update
     void Start()
@@ -29,12 +30,17 @@ public class MouseClicks3D : MonoBehaviour
         clickAction = InputSystem.actions.FindAction("Click");
         pointAction = InputSystem.actions.FindAction("Point");
         animator = GetComponent<Animator>();
+        recipeAnimator = uiManager.recipeAnimator;
     }
 
     // Update is called once per frame
     void Update()
     {
+        if (uiManager.InstructionsOpen) return;
+
         bool atPrep = animator.GetBool("AtPrep");
+        bool atCook = animator.GetBool("AtCook");
+        bool atStation = atPrep || atCook;
         prepStationManager.enabled = atPrep;
         if (prepStationZone != null) prepStationZone.SetActive(!atPrep);
 
@@ -44,6 +50,7 @@ public class MouseClicks3D : MonoBehaviour
             if (recipeAnimator != null && recipeAnimator.GetBool("Open") && (clickedObject == null || clickedObject.name != "Recipe"))
             {
                 recipeAnimator.SetBool("Open", false);
+                uiManager.NotifyRecipeClosed();
                 return;
             }
             if(clickedObject == null) { return; }
@@ -63,13 +70,14 @@ public class MouseClicks3D : MonoBehaviour
             }
             if (!puppyWantsAttention)
             {
-                if ("Recipe" == clickedObjectName)
+                if ("Recipe" == clickedObjectName && !atStation)
                 {
                     recipeAnimator = clickedObject.GetComponent<Animator>();
 
                     if (clickedObject.GetComponent<Animator>().GetBool("Open"))
                     {
                         clickedObject.GetComponent<Animator>().SetBool("Open", false);
+                        uiManager.NotifyRecipeClosed();
                     }
                     else
                     {

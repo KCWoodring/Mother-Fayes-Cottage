@@ -4,11 +4,13 @@ using UnityEngine;
 public class PuppyAttention : MonoBehaviour
 {
     public GameObject mainCamera;
+    [SerializeField] private CutTrail cutTrail;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    public void StartAttentionCycle()
     {
-        InvokeRepeating("PuppyWantsAttention", 20, 20);  
+        CancelInvoke("PuppyWantsAttention");// stops double calling the dog
+        InvokeRepeating("PuppyWantsAttention", 20, 20);
     }
 
     // Update is called once per frame
@@ -19,6 +21,7 @@ public class PuppyAttention : MonoBehaviour
         cam.SetBool("AtPrep", false);
         cam.SetBool("AtCook", false);
         cam.SetBool("AtCounter", true);
+        cutTrail.Clear();
         this.gameObject.GetComponent<AudioSource>().Play();
     }
 }
