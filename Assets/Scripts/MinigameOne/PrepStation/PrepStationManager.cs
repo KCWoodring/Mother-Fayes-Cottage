@@ -3,7 +3,6 @@ using UnityEngine.InputSystem;
 
 public class PrepStationManager : MonoBehaviour
 {
-
     public bool cuttingActive = false; // Flag to indicate if cutting is active
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     public GameObject startCut;
@@ -12,9 +11,10 @@ public class PrepStationManager : MonoBehaviour
 
     public GameObject blender;
 
+    public Transform blenderDropPoint;
+
     public Vector3 finalPumpkinTransform;
     public Vector3 finalHoneyDewTransform;
-
     public Vector3 cutOneStartPoint;
     public Vector3 cutOneEndPoint;
     public Vector3 cutTwoStartPoint;
@@ -31,11 +31,21 @@ public class PrepStationManager : MonoBehaviour
     private bool isCuttingHoneyDew = false;
     public bool BlenderNeedsAttention => (cuttingActive && cutAmount == 3) || pumpkinInBlender || honeyDewInBlender;
 
+
     private float cutAmount = 0;
 
     [SerializeField] private Transform[] points;
     [SerializeField] private CutController cutController;
     [SerializeField] private CookingManager cookingManager;
+
+    [Header("Cut Guides (index 0 = Line, 1 = Plus, 2 = Asterisk)")]
+    [SerializeField] private CutGuide[] guides;
+    [SerializeField] private float cutHitRadius = 0.5f;
+    [SerializeField] private CutTrail cutTrail;
+
+    private CutGuide.Segment activeSegment;
+    private Transform activeTarget;
+
 
     InputAction clickAction;
     InputAction pointAction;
@@ -166,11 +176,7 @@ public class PrepStationManager : MonoBehaviour
                 }
             }
             cutAmount = 3;
-            if (cutLine != null)
-            {
-                CutController lineCtrl = cutLine.GetComponent<CutController>();
-                if (lineCtrl != null) lineCtrl.ClearLine();
-            }
+            HideGuides();
         }
     }
     private void HandleCutDrag()
@@ -178,15 +184,24 @@ public class PrepStationManager : MonoBehaviour
         if (!cuttingActive || cutAmount == 3)
         {
             startedCut = false;
+            if (cutTrail != null) cutTrail.Clear();
             return;
         }
+
+        CutGuide guide = guides[(int)cutAmount];
 
         Ray ray = Camera.main.ScreenPointToRay(pointAction.ReadValue<Vector2>());
         bool hasHit = Physics.Raycast(ray, out RaycastHit hit);
 
         if (clickAction.WasPressedThisFrame())
         {
-            startedCut = hasHit && Vector3.Distance(startCut.transform.position, hit.point) < 1f;
+            if (hasHit) Debug.Log("Hit " + hit.collider.name + " at " + hit.point);
+            CancelDrag();
+            if (hasHit && guide.TryBegin(hit.point, cutHitRadius, out activeSegment, out activeTarget))
+            {
+                startedCut = true;
+                if (cutTrail != null) cutTrail.AddPoint(hit.point, hit.normal);
+            }
             return;
         }
 
@@ -194,14 +209,18 @@ public class PrepStationManager : MonoBehaviour
 
         if (!clickAction.IsPressed())
         {
-            startedCut = false;
+            CancelDrag();
             return;
         }
 
-        if (hasHit && Vector3.Distance(endCut.transform.position, hit.point) < 1f)
+        if (hasHit && cutTrail != null) cutTrail.AddPoint(hit.point, hit.normal);
+
+        if (hasHit && Vector2.Distance(new Vector2(activeTarget.position.x, activeTarget.position.y), new Vector2(hit.point.x, hit.point.y)) < cutHitRadius)
         {
-            startedCut = false;
-            CompleteCut();
+            guide.MarkDone(activeSegment);
+            CancelDrag();
+
+            if (guide.AllDone) CompleteCut();
         }
     }
     public void SelectPumpkinToCut()
@@ -220,19 +239,16 @@ public class PrepStationManager : MonoBehaviour
 
     public void CutOne()
     {
-        cutLine.SetActive(true);
-        cutController.SetUpLine(points);
+        ShowGuide(0);
     }
 
     public void CutTwo()
     {
-        cutLine.SetActive(true);
-        cutController.SetUpLine(points);
+        ShowGuide(1);
     }
     public void CutThree()
     {
-        cutLine.SetActive(true);
-        cutController.SetUpLine(points);
+        ShowGuide(2);
     }
     public bool CanBlend(bool pumpkinItem)
     {
@@ -245,7 +261,7 @@ public class PrepStationManager : MonoBehaviour
     {
         if (!CanBlend(pumpkinItem)) return;
 
-        Vector3 blenderSpot = new Vector3(blender.transform.position.x, blender.transform.position.y + 0.5f, blender.transform.position.z - 0.1f);
+        Vector3 blenderSpot = blenderDropPoint.position;
 
         if (pumpkinItem)
         {
@@ -269,8 +285,24 @@ public class PrepStationManager : MonoBehaviour
         }
 
         cuttingActive = false;
-        cutLine.SetActive(false);
-        cutController.ClearLine();
+        HideGuides();
         cutAmount = 0;
+    }
+    private void ShowGuide(int index)
+    {
+        for (int i = 0; i < guides.Length; i++) guides[i].gameObject.SetActive(i == index);
+        if (index >= 0 && index < guides.Length) guides[index].ResetGuide();
+    }
+
+    private void HideGuides()
+    {
+        foreach (var g in guides) g.gameObject.SetActive(false);
+    }
+    private void CancelDrag()
+    {
+        startedCut = false;
+        activeSegment = null;
+        activeTarget = null;
+        if (cutTrail != null) cutTrail.Clear();
     }
 }

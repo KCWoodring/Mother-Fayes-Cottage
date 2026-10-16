@@ -8,10 +8,12 @@ public class MeatChopping : MonoBehaviour
     [Header("Settings")]
     public float chopCooldown = 1f;
 
-    [Header("Visuals")]
-    public MeshRenderer meatRenderer;
+    [Header("Station")]
+    public Animator stationAnimator;
     public MeatCooking meatCooking;
 
+    [Header("Visuals")]
+    public MeshRenderer meatRenderer;
     public Material wholeSprite;
     public Material fourSprite;
     public Material bitsSprite;
@@ -53,6 +55,7 @@ public class MeatChopping : MonoBehaviour
     void Update()
     {
         if (!_canChop || Time.frameCount == canChopFrame) return;
+        if (stationAnimator == null || !stationAnimator.GetBool("AtCook")) return;
         if (!clickAction.WasPressedThisFrame()) return;
 
         Ray ray = Camera.main.ScreenPointToRay(pointAction.ReadValue<Vector2>());
