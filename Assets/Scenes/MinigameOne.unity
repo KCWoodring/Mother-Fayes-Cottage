@@ -300,13 +300,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Stirring
   soup: {fileID: 1545322955}
+  mixtureSpinner: {fileID: 1307181883}
   potZone: {fileID: 135253007}
   cam: {fileID: 318174802}
   arrow: {fileID: 952052882}
   cameraAnimator: {fileID: 318174803}
   audioSource: {fileID: 135253011}
   stirSound: {fileID: 8300000, guid: 66a95b1fec0002c49a10b3782f1be727, type: 3}
-  potMixtures: {fileID: 1307181880}
   laps: 3
   rounds: 1
   switchChance: 0.5
@@ -5261,8 +5261,8 @@ Transform:
   m_GameObject: {fileID: 1307181879}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.10069409, y: 0.00080184126, z: -0.057785396}
-  m_LocalScale: {x: 0.686913, y: 0.686913, z: 0.686913}
+  m_LocalPosition: {x: -0.1, y: 0.030039655, z: -0.058}
+  m_LocalScale: {x: 0.54618156, y: 0.56971186, z: 0.686913}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 488457469}

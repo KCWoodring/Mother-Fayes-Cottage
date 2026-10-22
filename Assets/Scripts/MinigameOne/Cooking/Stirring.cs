@@ -8,6 +8,7 @@ public class Stirring : MonoBehaviour
     public enum StirDirection { Clock, CounterClock }
 
     [SerializeField] private Transform soup;
+    [SerializeField] private Transform mixtureSpinner;
     [SerializeField] private Collider potZone;
     [SerializeField] private Camera cam;
     [SerializeField] private GameObject arrow;
@@ -16,9 +17,6 @@ public class Stirring : MonoBehaviour
     [SerializeField] private AudioSource audioSource;
     [SerializeField] private AudioClip stirSound;
 
-    [SerializeField] private PotMixtures potMixtures;
-
-
     [SerializeField] private float laps = 3f;
     [SerializeField] private int rounds = 1;
     [SerializeField, Range(0f, 1f)] private float switchChance = 0.5f;
@@ -26,7 +24,6 @@ public class Stirring : MonoBehaviour
     [SerializeField] private float deadZonePixels = 30f;
     [SerializeField] private bool debugLogs = true;
     [SerializeField] private float zoomDelay = 1.0f;
-    private float mixAngle;
 
     public UnityEvent<StirDirection> OnDirectionChange;
     public UnityEvent OnSoupCompleet;
@@ -60,7 +57,6 @@ public class Stirring : MonoBehaviour
         round = 0;
         progress = 0f;
         lastTenth = 0;
-        mixAngle = 0f;
         canStir = true;
         Debug.Log("Stirring unlocked. Need " + laps + " laps x " + rounds + " round(s). Direction: " + CurrentDirection);
     }
@@ -142,9 +138,7 @@ public class Stirring : MonoBehaviour
         float delta = Mathf.DeltaAngle(lastAngle, angle);
         lastAngle = angle;
 
-        mixAngle -= delta * Mathf.Deg2Rad;
-        mixAngle %= Mathf.PI * 2f;
-        potMixtures.SetSwirlAngle(mixAngle);
+        mixtureSpinner.Rotate(cam.transform.forward, +delta, Space.World);
 
         bool correct = (CurrentDirection == StirDirection.CounterClock) == (delta > 0f);
         progress = Mathf.Max(0f, progress + (correct ? Mathf.Abs(delta) : -Mathf.Abs(delta)));
