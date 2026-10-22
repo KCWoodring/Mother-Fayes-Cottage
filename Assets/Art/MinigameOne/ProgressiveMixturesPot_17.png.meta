@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: d071619a8435c1444ac6a439877a23b4
+guid: a2f84cfd85b6ea44b852a1c0a188662a
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -2217897381372379478
-    second: ProgressiveMixturesPot_10_0
+      213: -6658200806431753442
+    second: ProgressiveMixturesPot_17_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -102,13 +102,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: ProgressiveMixturesPot_10_0
+      name: ProgressiveMixturesPot_17_0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 1620
-        height: 1405
+        width: 1024
+        height: 888
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -117,8 +117,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: aaeb70325127831e0800000000000000
-      internalID: -2217897381372379478
+      spriteID: e1b7a69a4a15993a0800000000000000
+      internalID: -6658200806431753442
       vertices: []
       indices: 
       edges: []
