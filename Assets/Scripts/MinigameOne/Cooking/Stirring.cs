@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
+using System.Collections;
 
 public class Stirring : MonoBehaviour
 {
@@ -13,6 +14,7 @@ public class Stirring : MonoBehaviour
     [SerializeField] private Camera cam;
     [SerializeField] private GameObject arrow;
     [SerializeField] private Animator cameraAnimator;
+    [SerializeField] private ParticleSystem sparkleEffect; 
 
     [SerializeField] private AudioSource audioSource;
     [SerializeField] private AudioClip stirSound;
@@ -170,6 +172,7 @@ public class Stirring : MonoBehaviour
                 audioSource.clip = stirSound;
                 audioSource.loop = true;
                 audioSource.Play();
+              
             }
         }
     }
@@ -179,12 +182,15 @@ public class Stirring : MonoBehaviour
         if (audioSource != null && audioSource.isPlaying && audioSource.clip == stirSound)
         {
             audioSource.Stop();
+            
         }
     }
 
     private void FinishRound()
     {
+        sparkleEffect.Play();
         StopStirringAudio();
+        StartCoroutine(Delay());
         progress = 0f;
         lastTenth = 0;
         round++;
@@ -220,5 +226,10 @@ public class Stirring : MonoBehaviour
     private void Log(string message)
     {
         if (debugLogs) Debug.Log("[Stirring] " + message);
+    }
+    private IEnumerator Delay()
+    {
+        yield return new WaitForSeconds(1f);
+        sparkleEffect.Stop();
     }
 }
