@@ -13,7 +13,7 @@ public class DoneButton : MonoBehaviour
     [SerializeField] private Color idleColor = Color.white;
     [SerializeField] private Color flashColor = Color.green;
     [SerializeField] private float flashSpeed = 2f;
-    [SerializeField] private string victorySceneName = "WinScene";
+    [SerializeField] private string victorySceneName = "MinigameTwo";
 
 
     private InputAction clickAction;
