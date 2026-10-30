@@ -13,6 +13,8 @@ TagManager:
   - HoneyDew
   - Blender
   - Dog
+  - Walkway
+  - TireJump
   layers:
   - Default
   - TransparentFX

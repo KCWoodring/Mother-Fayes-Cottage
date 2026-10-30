@@ -27,10 +27,15 @@ public class Quicktime : MonoBehaviour
     public float greenTime;
     private float ratio;
     private bool isTargetActive = false;
-    private float TimeAdded; 
-
+    private float TimeAdded;
 
     private void Awake()
+    {
+        Ring.GetComponent<Image>().enabled = false;
+        Target.GetComponent<Image>().enabled = false;
+    }
+
+    private void StartQuickT()
     {
         ratio = startRatio;
         isTargetActive = true;
@@ -50,7 +55,7 @@ public class Quicktime : MonoBehaviour
         {
             isTargetActive = false;
             TimeAdded += greyTime;
-            Debug.Log(ratio + "  " + TimeAdded);
+            
         }
 
 
@@ -73,31 +78,40 @@ public class Quicktime : MonoBehaviour
         if (!context.performed || !isTargetActive)
             return;
         isTargetActive = false;
-
+        // get rid of the // if resizing messes something up
        if (ratio > redRing)
         {
             TimeAdded = greyTime;
-            Debug.Log(ratio + "  " + TimeAdded);
+           // Debug.Log(ratio + "  " + TimeAdded);
         }
        else if (ratio > yellowRing)
         {
             TimeAdded = redTime;
-            Debug.Log(ratio + "  " + TimeAdded);
+            //Debug.Log(ratio + "  " + TimeAdded);
         }
        else if (ratio > greenRing)
         {
             TimeAdded = yellowTime;
-            Debug.Log(ratio + "  " + TimeAdded);
+           // Debug.Log(ratio + "  " + TimeAdded);
         }
        else if (ratio > greyRing)
         {
             TimeAdded = greenTime;
-            Debug.Log(ratio + "  " + TimeAdded);
+           // Debug.Log(ratio + "  " + TimeAdded);
         }
        else
         {
             TimeAdded = greyTime;
             Debug.Log(ratio + "  " + TimeAdded);
+        }
+    }
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("TireJump"))
+        {
+            Ring.GetComponent<Image>().enabled = true;
+            Target.GetComponent<Image>().enabled = true;
+            StartQuickT();
         }
     }
 }
