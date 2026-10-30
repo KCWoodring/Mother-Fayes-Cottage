@@ -12,6 +12,7 @@ TagManager:
   - Pumpkin
   - HoneyDew
   - Blender
+  - Walkway
   layers:
   - Default
   - TransparentFX
