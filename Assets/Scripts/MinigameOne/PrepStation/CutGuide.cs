@@ -51,27 +51,27 @@ public class CutGuide : MonoBehaviour
         return false;
     }
 
-    public void MarkDone(Segment s)
+    public void MarkDone(Segment segment)
     {
-        s.done = true;
+        segment.done = true;
 
-        if (s.highlight == null)
+        if (segment.highlight == null)
         {
-            var go = new GameObject("CutHighlight");
-            go.transform.SetParent(transform, false);
-            var lr = go.AddComponent<LineRenderer>();
+            var gameObject = new GameObject("CutHighlight");
+            gameObject.transform.SetParent(transform, false);
+            var lr = gameObject.AddComponent<LineRenderer>();
             lr.useWorldSpace = true;
             lr.positionCount = 2;
             lr.material = highlightMaterial;
             lr.startColor = lr.endColor = highlightColor;
             lr.startWidth = lr.endWidth = highlightWidth;
-            s.highlight = lr;
+            segment.highlight = lr;
         }
 
         Vector3 up = transform.forward * -surfaceOffset; // adjust if the guide faces a different way
-        s.highlight.SetPosition(0, s.start.position + up);
-        s.highlight.SetPosition(1, s.end.position + up);
-        s.highlight.gameObject.SetActive(true);
+        segment.highlight.SetPosition(0, segment.start.position + up);
+        segment.highlight.SetPosition(1, segment.end.position + up);
+        segment.highlight.gameObject.SetActive(true);
     }
     static float Dist2D(Vector3 a, Vector3 b)
     {
