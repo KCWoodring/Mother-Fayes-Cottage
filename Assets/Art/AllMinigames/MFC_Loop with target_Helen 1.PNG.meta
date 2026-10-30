@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 21e00e419809a9441b40fc060053f8e8
+guid: f2a951827f1a4184b98aa9b50f44e085
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -2065283420476690655
-    second: IMG_3160 1_0
+      213: -3488780282190988787
+    second: MFC_Loop with target_Helen 1_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -102,13 +102,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: IMG_3160 1_0
+      name: MFC_Loop with target_Helen 1_0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 888
-        height: 885
+        width: 1177
+        height: 1177
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -117,8 +117,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 12fabf1eba3a653e0800000000000000
-      internalID: -2065283420476690655
+      spriteID: d0a7e9451dc559fc0800000000000000
+      internalID: -3488780282190988787
       vertices: []
       indices: 
       edges: []
