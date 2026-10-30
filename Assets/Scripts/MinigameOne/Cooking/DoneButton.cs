@@ -8,6 +8,7 @@ public class DoneButton : MonoBehaviour
     public MeatCooking meatCooking;
     [SerializeField] private PotMixtures potMixtures;
     [SerializeField] private CookingManager cookingManager;
+    [SerializeField] private PuppyAttention puppy;
     [SerializeField] private TMP_Text label;
     [SerializeField] private GameObject meatTimer;
     [SerializeField] private Color idleColor = Color.white;
@@ -35,7 +36,7 @@ public class DoneButton : MonoBehaviour
         UpdateFlash();
 
         if (!clickAction.WasPressedThisFrame()) return;
-        if (!IsDoneReady()) return;
+        if (!CanPress()) return;
 
         Ray ray = cam.ScreenPointToRay(pointAction.ReadValue<Vector2>());
         if (Physics.Raycast(ray, out RaycastHit hit) && hit.collider == buttonCollider)
@@ -70,5 +71,10 @@ public class DoneButton : MonoBehaviour
     {
         bool meatReady = meatCooking.isCooking && meatCooking.state == MeatCooking.CookState.Brown;
         return meatReady || cookingManager.IsFinished;
+    }
+    private bool CanPress()
+    {
+        bool dogBlocking = puppy != null && puppy.DogOnScreen;
+        return IsDoneReady() && !dogBlocking;
     }
 }
