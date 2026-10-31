@@ -22,6 +22,10 @@ public class DogSpin : MonoBehaviour
     [SerializeField] private SpinDirection direction = SpinDirection.Any;
     [SerializeField] private float deadZonePixels = 30f;
 
+    [Header("UI Arrows")]
+    [SerializeField] private GameObject clockwiseArrow;
+    [SerializeField] private GameObject counterClockwiseArrow;
+
     public UnityEvent onComplete;
 
     private CharacterController dogCharacterController;
@@ -38,6 +42,7 @@ public class DogSpin : MonoBehaviour
         pointAction = InputSystem.actions.FindAction("Point");
         dogCharacterController = dog.GetComponent<CharacterController>();
         if (cam == null) cam = Camera.main;
+        SetArrows(false, false);
     }
     public void BeginMinigame()
     {
@@ -48,6 +53,13 @@ public class DogSpin : MonoBehaviour
 
         dogMovement.SetControl(false);
         Teleport(spinPoint.position);
+
+        switch (direction)
+        {
+            case SpinDirection.Clock: SetArrows(true, false); break;
+            case SpinDirection.CounterClock: SetArrows(false, true); break;
+            default: SetArrows(true, true); break;
+        }
     }
 
     private void Update()
@@ -89,6 +101,8 @@ public class DogSpin : MonoBehaviour
         else if (direction == SpinDirection.Clock) lockedSign = -1;
         else if (lockedSign == 0 && Mathf.Abs(delta) > 0.01f) lockedSign = sign;
 
+        UpdateArrows();
+
         bool correct = sign == lockedSign;
         progress = Mathf.Max(0f, progress + (correct ? Mathf.Abs(delta) : -Mathf.Abs(delta)));
 
@@ -99,12 +113,25 @@ public class DogSpin : MonoBehaviour
         active = false;
         spinning = false;
 
+        SetArrows(false, false);
+
         Teleport(exitPoint.position);
         dog.rotation = Quaternion.Euler(0f, exitPoint.eulerAngles.y, 0f);
 
         dogMovement.SetControl(true);
         courseCamera.ReturnToFollow();
         onComplete.Invoke();
+    }
+    private void SetArrows(bool clockwise, bool counterClockwise)
+    {
+        if (clockwiseArrow != null) clockwiseArrow.SetActive(clockwise);
+        if (counterClockwiseArrow != null) counterClockwiseArrow.SetActive(counterClockwise);
+    }
+    private void UpdateArrows()
+    {
+        if (lockedSign == 0) SetArrows(true, true);
+        else if (lockedSign == 1) SetArrows(false, true);
+        else SetArrows(true, false);
     }
     private void Teleport(Vector3 position)
     {

@@ -6,6 +6,7 @@ public class StopWatchTimer : MonoBehaviour
     [SerializeField] private TMP_Text label;
     [SerializeField] private bool startOnAwake = true;
     [SerializeField] private bool showHundredths = false;
+    [SerializeField] private GameObject instructionsPanel;
 
     [Header("Mistake penalty")]
     [SerializeField] private float penaltySeconds = 3f;
@@ -15,7 +16,7 @@ public class StopWatchTimer : MonoBehaviour
 
     [Header("Time limit")]
     [SerializeField] private float timeLimit = 90f;
-    [SerializeField] private string loserSceneName = "GameOverScene";
+    [SerializeField] private string loserSceneName = "MiniGame2LoseScene";
 
     public float Elapsed { get; private set; }
     public bool IsRunning { get; private set; }
@@ -39,8 +40,16 @@ public class StopWatchTimer : MonoBehaviour
         UpdateLabel();
         CheckTimeLimit();
     }
+    public void ShowInstructions()
+    {
+        instructionsPanel.SetActive(true);
+    }
 
-    public void StartWatch() => IsRunning = true;
+    public void StartWatch()
+    {
+        instructionsPanel.SetActive(false);
+        IsRunning = true;
+    } 
 
     public void PauseWatch() => IsRunning = false;
 
@@ -64,7 +73,11 @@ public class StopWatchTimer : MonoBehaviour
     }
     public void AddPenalty()
     {
-        Elapsed += penaltySeconds;
+        AddPenalty(penaltySeconds);
+    }
+    public void AddPenalty(float seconds)
+    {
+        Elapsed += seconds;
         flashTimeRemaining = flashDuration;
         UpdateLabel();
         CheckTimeLimit();
