@@ -22,8 +22,15 @@ public class Quicktime : MonoBehaviour
 
     private float ratio;
     private bool isTargetActive = false;
+    private float TimeAdded;
 
     public void Begin()
+    {
+        Ring.GetComponent<Image>().enabled = false;
+        Target.GetComponent<Image>().enabled = false;
+    }
+
+    private void StartQuickT()
     {
         ratio = startRatio;
         isTargetActive = true;
@@ -36,8 +43,17 @@ public class Quicktime : MonoBehaviour
         ratio -= shrinkSpeed * Time.deltaTime;
         Resize();
 
-        if (SpacePressed()) { End(GetZone(ratio)); return; }
-        if (ratio <= 0f) End(Zone.Grey);
+
+
+
+        if (ratio <= 0f)
+        {
+            isTargetActive = false;
+            TimeAdded += greyTime;
+            
+        }
+
+
     }
     Zone GetZone(float ratio)
     {
@@ -55,17 +71,41 @@ public class Quicktime : MonoBehaviour
     void End(Zone zone)
     {
         isTargetActive = false;
-        Finished?.Invoke(zone);
+        // get rid of the // if resizing messes something up
+       if (ratio > redRing)
+        {
+            TimeAdded = greyTime;
+           // Debug.Log(ratio + "  " + TimeAdded);
+        }
+       else if (ratio > yellowRing)
+        {
+            TimeAdded = redTime;
+            //Debug.Log(ratio + "  " + TimeAdded);
+        }
+       else if (ratio > greenRing)
+        {
+            TimeAdded = yellowTime;
+           // Debug.Log(ratio + "  " + TimeAdded);
+        }
+       else if (ratio > greyRing)
+        {
+            TimeAdded = greenTime;
+           // Debug.Log(ratio + "  " + TimeAdded);
+        }
+       else
+        {
+            TimeAdded = greyTime;
+            Debug.Log(ratio + "  " + TimeAdded);
+        }
     }
-    public void Resize()
+    private void OnTriggerEnter(Collider other)
     {
-        Ring.localScale = Target.localScale * (Mathf.Max(ratio, 0f));
-        CenterRing();
-    }
-    void CenterRing()
-    {
-        Vector3 targetCenter = Target.TransformPoint(Target.rect.center);
-        Ring.position = targetCenter;
+        if (other.CompareTag("TireJump"))
+        {
+            Ring.GetComponent<Image>().enabled = true;
+            Target.GetComponent<Image>().enabled = true;
+            StartQuickT();
+        }
     }
 }
     
