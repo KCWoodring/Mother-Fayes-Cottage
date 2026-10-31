@@ -1,14 +1,22 @@
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.InputSystem;
-
 using UnityEngine.UI;
 
 public class Walkway : MonoBehaviour
 {
     [Header("Walkway")]
     [SerializeField] private Transform startPoint;     
-    [SerializeField] private Transform endPoint;       
-    [SerializeField] private string walkwayTag = "Walkway";
+    [SerializeField] private Transform endPoint;
+    [SerializeField] private float dogHeightOffset = 0.3f;
+
+    [Header("References")]
+    [SerializeField] private Transform dog;
+    [SerializeField] private DogMovement dogMovement;
+    [SerializeField] private CourseCamera courseCamera;
+    [SerializeField] private Transform cameraView;
+    [SerializeField] private Image leftArrow;
+    [SerializeField] private Image rightArrow;
 
     [Header("Tilt")]
     [SerializeField] private float failAngle = 65f;
@@ -17,88 +25,73 @@ public class Walkway : MonoBehaviour
     [SerializeField] private float centerSpeed = 60f;
     [SerializeField] private float centerArea = 3f;
     [SerializeField] private Vector3 tiltAxis = Vector3.forward;   
-    [SerializeField] private GameObject LeftArrow;
-    [SerializeField] private GameObject RightArrow;
 
     [Header("Moving Forward")]
     [SerializeField] private float centeredSpeed = 0.5f;
     [SerializeField] private float tiltedSpeed = 1.5f;
 
-    [Header("Camera")]
-    [SerializeField] private Camera cam;
-    [SerializeField] private MonoBehaviour camFollow;
-    [SerializeField] private MouseController mouse;
+    [Header("Camera View")]
+    [SerializeField] private bool moveCameraView = true;
     [SerializeField] private float camDistance = 6f;
     [SerializeField] private float camHeight = 2f;
     [SerializeField] private float lookAtHeight = 1f;
-    [SerializeField] private float camSmoothing = 4f;
-    [SerializeField] private Vector3 topDownEuler = new Vector3(90f, 0f, 0f);
-    bool camActive;
-    bool camReturning;
-    float angle, leanDir, moveInput;
-    bool leaning, balancing;
+
+    [Header("On Fail")]
+    [SerializeField] private Vector3 failSpawnOffset = new Vector3(0f, 0.5f, 2f);
+
+    public UnityEvent onMistake;
+    public UnityEvent onComplete;
+
+    private CharacterController dogController;
+    private bool active;
+    private bool leaning;
+    private float angle, leanDir, moveInput;
 
     Vector3 lineDir;          
     float lineLength;
     float travelled;          
     Vector3 heading;          
     Quaternion baseRotation;
-
-    Transform camT;
-    Vector3 camOffset;
-   
-    Rigidbody rb;
-    private void Start()
+    private void Awake()
     {
-        rb = GetComponent<Rigidbody>();
+        dogController = dog.GetComponent<CharacterController>();
+        SetArrows(false);
     }
-
-    void OnTriggerEnter(Collider other)
+    public void BeginMinigame()
     {
-        if (balancing || camActive || !other.CompareTag(walkwayTag)) return;
+        if (active) return;
 
-        rb = GetComponent<Rigidbody>();
-        if (rb != null)
-        {
-            rb.angularVelocity = Vector3.zero;
-            rb.isKinematic = true;
-        }
-            RightArrow.SetActive(true);
-        LeftArrow.SetActive(true);
-        camT = cam.transform;
-        camOffset = camT.position - transform.position;
-        
+        dogMovement.SetControl(false);
 
-        camFollow.enabled = false;
-        mouse.enabled = false;
+        if (dogController != null) dogController.enabled = false;
 
-       
         Vector3 a = startPoint.position;
         Vector3 b = endPoint.position;
         lineDir = (b - a).normalized;
         lineLength = Vector3.Distance(a, b);
-        travelled = 0f;
 
         heading = Vector3.ProjectOnPlane(lineDir, Vector3.up).normalized;
         baseRotation = Quaternion.LookRotation(heading, Vector3.up);
 
-        transform.position = a;          
-
+        ResetRun();
+        SetArrows(true);
+        UpdateArrowColors();
+        active = true;
+    }
+    private void ResetRun()
+    {
+        travelled = 0f;
         angle = 0f;
         leaning = false;
         RollLeanDirection();
+        dog.position = startPoint.position + Vector3.up * dogHeightOffset;
         ApplyRotation();
-        camActive = true;
-        camReturning = false;
-        balancing = true;
-       
-
-        other.enabled = false;           
     }
-
     void Update()
     {
-        if (!balancing) return;
+        if (!active) return;
+
+        ReadInput();
 
         float dt = Time.deltaTime;
 
@@ -118,8 +111,7 @@ public class Walkway : MonoBehaviour
         {
             angle = Mathf.Clamp(angle, -failAngle, failAngle);
             ApplyRotation();
-            
-            EndBalance();
+            Fail();
             return;
         }
 
@@ -131,86 +123,70 @@ public class Walkway : MonoBehaviour
 
         if (travelled >= lineLength)
         {
-            transform.position = endPoint.position;  
-            EndBalance();
+            dog.position = endPoint.position + Vector3.up * dogHeightOffset;
+            Finish();
             return;
         }
 
-        transform.position = startPoint.position + lineDir * travelled;
+        dog.position = startPoint.position + lineDir * travelled + Vector3.up * dogHeightOffset;
+        FollowWithCamera();
     }
-
-    void LateUpdate()
+    private void ReadInput()
     {
-        if (!camActive) return;
+        float input = 0f;
+        Keyboard keyboard = Keyboard.current;
 
-        Vector3 targetPos;
-        Quaternion targetRot = Quaternion.Euler(topDownEuler);
-
-        if (camReturning)
+        if (keyboard != null)
         {
-            targetPos = transform.position + camOffset;   
-        }
-        else
-        {
-            
-            targetPos = transform.position + heading * camDistance + Vector3.up * camHeight;
-            Vector3 focus = transform.position + Vector3.up * lookAtHeight;
-            targetRot = Quaternion.LookRotation(focus - targetPos, Vector3.up);
+            if (keyboard.leftArrowKey.isPressed || keyboard.aKey.isPressed) input += 1f;
+            if (keyboard.rightArrowKey.isPressed || keyboard.dKey.isPressed) input -= 1f;
         }
 
-        
-        float t = 1f - Mathf.Exp(-camSmoothing * Time.deltaTime);
-        camT.position = Vector3.Lerp(camT.position, targetPos, t);
-        camT.rotation = Quaternion.Slerp(camT.rotation, targetRot, t);
-
-       
-        if (camReturning && (camT.position - targetPos).sqrMagnitude < 0.01f && Quaternion.Angle(camT.rotation, targetRot) < 1f)
-        {
-            if (camReturning)
-            {
-                targetPos = transform.position + camOffset;
-                targetRot = Quaternion.Euler(topDownEuler);
-            }
-            camT.position = targetPos;
-            camT.rotation = targetRot;
-            camActive = false;
-            camReturning = false;
-            mouse.enabled = true;
-            transform.rotation = Quaternion.identity;
-            camFollow.enabled = true;
-        }
+        moveInput = input;
+        UpdateArrowColors();
     }
-
-    void EndBalance()
+    private void Fail()
     {
-        balancing = false;
-        camReturning = true;
+        dog.position = endPoint.position + baseRotation * failSpawnOffset;
 
-        transform.rotation = Quaternion.identity;
-
-        if (rb != null)
-        {
-            rb.isKinematic = false;
-            rb.freezeRotation = true;          
-            rb.angularVelocity = Vector3.zero;
-            rb.rotation = Quaternion.identity;
-        }
-
-        Destroy(LeftArrow);
-        Destroy(RightArrow);
+        onMistake.Invoke();
+        Finish();
     }
-
-    void ApplyRotation() => transform.rotation = baseRotation * Quaternion.AngleAxis(-angle, tiltAxis);
-
-    void RollLeanDirection() => leanDir = Random.value < 0.5f ? -1f : 1f;
-       
-    
-
-    public void Balance(InputAction.CallbackContext context)
+    private void FollowWithCamera()
     {
-        moveInput = context.canceled ? 0f : context.ReadValue<float>();
-        LeftArrow.GetComponent<Image>().color = moveInput > 0 ? Color.gray : Color.white;
-        RightArrow.GetComponent<Image>().color = moveInput < 0 ? Color.gray : Color.white;
+        if (!moveCameraView || cameraView == null) return;
+
+        Vector3 pos = dog.position + heading * camDistance + Vector3.up * camHeight;
+        Vector3 focus = dog.position + Vector3.up * lookAtHeight;
+        cameraView.SetPositionAndRotation(pos, Quaternion.LookRotation(focus - pos, Vector3.up));
+    }
+    private void Finish()
+    {
+        active = false;
+        moveInput = 0f;
+        SetArrows(false);
+
+        dog.rotation = Quaternion.LookRotation(heading, Vector3.up);
+        dog.position = endPoint.position + dog.rotation * failSpawnOffset;
+        if (dogController != null) dogController.enabled = true;
+
+        dogMovement.SetControl(true);
+        courseCamera.ReturnToFollow();
+        onComplete.Invoke();
+    }
+    private void ApplyRotation() => dog.rotation = baseRotation * Quaternion.AngleAxis(-angle, tiltAxis);
+
+    private void RollLeanDirection() => leanDir = Random.value < 0.5f ? -1f : 1f;
+
+    private void SetArrows(bool on)
+    {
+        if (leftArrow != null) leftArrow.gameObject.SetActive(on);
+        if (rightArrow != null) rightArrow.gameObject.SetActive(on);
+    }
+    private void UpdateArrowColors()
+    {
+        if (leftArrow != null) leftArrow.color = moveInput > 0 ? Color.gray : Color.white;
+        if (rightArrow != null) rightArrow.color = moveInput < 0 ? Color.gray : Color.white;
     }
 }
 

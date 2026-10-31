@@ -1,7 +1,4 @@
 using System;
-using System.Net.NetworkInformation;
-using System.Runtime.CompilerServices;
-using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
@@ -9,6 +6,9 @@ using static UnityEngine.GraphicsBuffer;
 
 public class Quicktime : MonoBehaviour
 {
+    public enum Zone { Grey, Red, Yellow, Green }
+    public event Action<Zone> Finished;
+
     [SerializeField] RectTransform Ring;
     [SerializeField] RectTransform Target;
     public float startRatio = 0.9f;
@@ -17,19 +17,14 @@ public class Quicktime : MonoBehaviour
     [Header("Zone sizes")]
     [SerializeField] private float redRing = 0.65f;
     [SerializeField] private float yellowRing = 0.55f;
-    [SerializeField] private float greenRing = 0.42f;
-    [SerializeField] private float greyRing = 0.35f;
+    [SerializeField] private float greenRing = 0.33f;
+    [SerializeField] private float greyRing = 0.05f;
 
-    [Header("Add Time")]
-    public float greyTime;
-    public float redTime;
-    public float yellowTime;
-    public float greenTime;
     private float ratio;
     private bool isTargetActive = false;
     private float TimeAdded;
 
-    private void Awake()
+    public void Begin()
     {
         Ring.GetComponent<Image>().enabled = false;
         Target.GetComponent<Image>().enabled = false;
@@ -43,8 +38,8 @@ public class Quicktime : MonoBehaviour
     }
     void Update()
     {
-        if (!isTargetActive)
-            return;
+        if (!isTargetActive) return;
+
         ratio -= shrinkSpeed * Time.deltaTime;
         Resize();
 
@@ -60,23 +55,21 @@ public class Quicktime : MonoBehaviour
 
 
     }
-    public void Resize()
+    Zone GetZone(float ratio)
     {
-        float rectCorrection = Target.rect.width / Ring.rect.width;
-        Ring.localScale = Target.localScale * (MathF.Max(ratio, 0f) * rectCorrection);
-        centerRing();
+        if (ratio > redRing) return Zone.Grey;      
+        if (ratio > yellowRing) return Zone.Red;
+        if (ratio > greenRing) return Zone.Yellow;
+        if (ratio > greyRing) return Zone.Green;
+        return Zone.Grey;                       
     }
-    private void centerRing()
-    { 
-        Vector3 targetCenter = Target.TransformPoint(Target.rect.center);
-        Vector3 ringOffset = Ring.TransformVector(Ring.rect.center);
-        Ring.position = targetCenter - ringOffset;
+    bool SpacePressed()
+    {
+        return (Keyboard.current != null && Keyboard.current.spaceKey.wasPressedThisFrame);
+    }
 
-    }
-    public void HurdleQuickTime(InputAction.CallbackContext context)
+    void End(Zone zone)
     {
-        if (!context.performed || !isTargetActive)
-            return;
         isTargetActive = false;
         // get rid of the // if resizing messes something up
        if (ratio > redRing)

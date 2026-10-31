@@ -12,10 +12,16 @@ EditorBuildSettings:
     path: Assets/Scenes/MinigameOne.unity
     guid: a681d802b61712d4788a4ba4cdec05c3
   - enabled: 1
-    path: Assets/Scenes/GameOverScene.unity
-    guid: ae515c88193ebd340830a5924ce4116a
+    path: Assets/Scenes/MinigameTwo.unity
+    guid: 63e1caf3e2513da499e62b37f186af90
   - enabled: 1
     path: Assets/Scenes/WinScene.unity
     guid: 452bee0d0c887b54e9ec94e5cd3a0d91
+  - enabled: 1
+    path: Assets/Scenes/GameOverScene.unity
+    guid: ae515c88193ebd340830a5924ce4116a
+  - enabled: 1
+    path: Assets/Scenes/MiniGame2LoseScene.unity
+    guid: 7740d3a295c205d48a99c5e2a9b488b6
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
