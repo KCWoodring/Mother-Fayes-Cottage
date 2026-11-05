@@ -2,9 +2,14 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
+using System.Collections;
 
 public class Walkway : MonoBehaviour
 {
+    [Header("Start")]
+    [SerializeField] private float startDelay = 1.5f;
+    private bool starting;
+
     [Header("Walkway")]
     [SerializeField] private Transform startPoint;     
     [SerializeField] private Transform endPoint;
@@ -43,6 +48,7 @@ public class Walkway : MonoBehaviour
     public UnityEvent onComplete;
 
     private CharacterController dogController;
+    private HoldButtonImage leftHold, rightHold;
     private bool active;
     private bool leaning;
     private float angle, leanDir, moveInput;
@@ -52,10 +58,22 @@ public class Walkway : MonoBehaviour
     float travelled;          
     Vector3 heading;          
     Quaternion baseRotation;
+
+    private bool flipped;
+
     private void Awake()
     {
         dogController = dog.GetComponent<CharacterController>();
+        leftHold = GetOrAddHold(leftArrow);
+        rightHold = GetOrAddHold(rightArrow);
         SetArrows(false);
+    }
+    public void SetFlipped(bool flip)
+    {
+        if (active || flip == flipped) return;
+
+        (startPoint, endPoint) = (endPoint, startPoint);
+        flipped = flip;
     }
     public void BeginMinigame()
     {
@@ -74,8 +92,18 @@ public class Walkway : MonoBehaviour
         baseRotation = Quaternion.LookRotation(heading, Vector3.up);
 
         ResetRun();
+
+        PlaceCameraView(dog.position);
+
+        StartCoroutine(BeginAfterDelay());
+    }
+    private IEnumerator BeginAfterDelay()
+    {
+        yield return new WaitForSeconds(startDelay);
+
         SetArrows(true);
         UpdateArrowColors();
+        starting = false;
         active = true;
     }
     private void ResetRun()
@@ -140,6 +168,11 @@ public class Walkway : MonoBehaviour
         {
             if (keyboard.leftArrowKey.isPressed || keyboard.aKey.isPressed) input += 1f;
             if (keyboard.rightArrowKey.isPressed || keyboard.dKey.isPressed) input -= 1f;
+
+            if (leftHold != null && leftHold.IsHeld) input += 1f;
+            if (rightHold != null && rightHold.IsHeld) input -= 1f;
+
+            input = Mathf.Clamp(input, -1f, 1f);
         }
 
         moveInput = input;
@@ -152,12 +185,14 @@ public class Walkway : MonoBehaviour
         onMistake.Invoke();
         Finish();
     }
-    private void FollowWithCamera()
+    private void FollowWithCamera() => PlaceCameraView(dog.position);
+
+    private void PlaceCameraView(Vector3 dogPos)
     {
         if (!moveCameraView || cameraView == null) return;
 
-        Vector3 pos = dog.position + heading * camDistance + Vector3.up * camHeight;
-        Vector3 focus = dog.position + Vector3.up * lookAtHeight;
+        Vector3 pos = dogPos + heading * camDistance + Vector3.up * camHeight;
+        Vector3 focus = dogPos + Vector3.up * lookAtHeight;
         cameraView.SetPositionAndRotation(pos, Quaternion.LookRotation(focus - pos, Vector3.up));
     }
     private void Finish()
@@ -187,6 +222,13 @@ public class Walkway : MonoBehaviour
     {
         if (leftArrow != null) leftArrow.color = moveInput > 0 ? Color.gray : Color.white;
         if (rightArrow != null) rightArrow.color = moveInput < 0 ? Color.gray : Color.white;
+    }
+    private HoldButtonImage GetOrAddHold(Image arrow)
+    {
+        if (arrow == null) return null;
+        arrow.raycastTarget = true;
+        var hold = arrow.GetComponent<HoldButtonImage>();
+        return hold != null ? hold : arrow.gameObject.AddComponent<HoldButtonImage>();
     }
 }
 

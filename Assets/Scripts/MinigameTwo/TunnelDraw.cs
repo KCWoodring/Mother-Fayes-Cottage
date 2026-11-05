@@ -28,19 +28,14 @@ public class TunnelDraw : MonoBehaviour
     private bool firstGo;
     private int next;   // the waypoint to reach next
 
+    private bool flipped;
+
     private void Awake()
     {
         clickAction = InputSystem.actions.FindAction("Click");
         pointAction = InputSystem.actions.FindAction("Point");
 
         dogCharacterController = dog.GetComponent<CharacterController>();
-
-        guideLine.useWorldSpace = true;
-        guideLine.positionCount = waypoints.Length;
-        for (int i = 0; i < waypoints.Length; i++)
-        {
-            guideLine.SetPosition(i, waypoints[i].position + Vector3.up * lineHeight);
-        }
             
         guideLine.gameObject.SetActive(false);
         drawnLine.gameObject.SetActive(false);
@@ -48,6 +43,13 @@ public class TunnelDraw : MonoBehaviour
 
     public void BeginMinigame()
     {
+        guideLine.useWorldSpace = true;
+        guideLine.positionCount = waypoints.Length;
+        for (int i = 0; i < waypoints.Length; i++)
+        {
+            guideLine.SetPosition(i, waypoints[i].position + Vector3.up * lineHeight);
+        }
+
         active = true;
         drawing = false;
         firstGo = true;
@@ -157,6 +159,12 @@ public class TunnelDraw : MonoBehaviour
     {
         Vector3 screenLeft = -Vector3.ProjectOnPlane(Camera.main.transform.up, Vector3.up).normalized;
         return screenLeft * dogOffsetDistance;
+    }
+    public void SetFlipped(bool flip)
+    {
+        if (active || flip == flipped) return;
+        System.Array.Reverse(waypoints);
+        flipped = flip;
     }
     private void OnDrawGizmos()
     {

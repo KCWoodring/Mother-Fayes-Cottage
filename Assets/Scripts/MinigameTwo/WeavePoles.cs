@@ -17,6 +17,8 @@ public class WeavePoles : MonoBehaviour
     [SerializeField] private Image leftArrow;
     [SerializeField] private Image rightArrow;
 
+    private HoldButtonImage leftHold, rightHold;
+
 
     public UnityEvent onMistake;
     public UnityEvent onComplete;
@@ -25,9 +27,12 @@ public class WeavePoles : MonoBehaviour
     private bool active;
     private int targetIndex;
 
+    private bool flipped;
     private void Awake()
     {
         dogCharacterController = dog.GetComponent<CharacterController>();
+        leftHold = leftArrow.GetComponent<HoldButtonImage>();
+        rightHold = rightArrow.GetComponent<HoldButtonImage>();
         leftArrow.gameObject.SetActive(false);
         rightArrow.gameObject.SetActive(false);
     }
@@ -47,34 +52,26 @@ public class WeavePoles : MonoBehaviour
     }
     private void ReadInput()
     {
+        bool clickedLeft = leftHold.PressDown();
+        bool clickedRight = rightHold.PressDown();
+
         if (targetIndex >= weavePoints.Length - 1) return;
         if (!HasArrived()) return;
 
+        Vector3 nextStep = weavePoints[targetIndex + 1].position - weavePoints[targetIndex].position;
+        bool nextNeedsRight = Vector3.Dot(nextStep, cameraView.right) > 0f;
 
-        if (targetIndex % 2 == 0)
-        {
-            rightArrow.gameObject.SetActive(true);
-            leftArrow.gameObject.SetActive(false);
-        }
-        else
-        {
-            rightArrow.gameObject.SetActive(false);
-            leftArrow.gameObject.SetActive(true);
-        }
+        rightArrow.gameObject.SetActive(nextNeedsRight);
+        leftArrow.gameObject.SetActive(!nextNeedsRight);
 
-
-        bool pressedLeft = Keyboard.current.leftArrowKey.wasPressedThisFrame || Keyboard.current.aKey.wasPressedThisFrame;
-        bool pressedRight = Keyboard.current.rightArrowKey.wasPressedThisFrame || Keyboard.current.dKey.wasPressedThisFrame;
+        bool pressedLeft = clickedLeft || Keyboard.current.leftArrowKey.wasPressedThisFrame || Keyboard.current.aKey.wasPressedThisFrame;
+        bool pressedRight = clickedRight || Keyboard.current.rightArrowKey.wasPressedThisFrame || Keyboard.current.dKey.wasPressedThisFrame;
         if (!pressedLeft && !pressedRight) return;
 
-        Vector3 step = weavePoints[targetIndex + 1].position - weavePoints[targetIndex].position;
-        bool needsRight = Vector3.Dot(step, cameraView.right) > 0f;
-
-        if (needsRight == pressedRight) 
-        { 
-            targetIndex++; 
-        }
-        else onMistake.Invoke();
+        if (nextNeedsRight == pressedRight)
+            targetIndex++;
+        else
+            onMistake.Invoke();
     }
     private void MoveDog()
     {
@@ -112,6 +109,12 @@ public class WeavePoles : MonoBehaviour
         dogMovement.SetControl(true);
         courseCamera.ReturnToFollow();
         onComplete.Invoke();
+    }
+    public void SetFlipped(bool flip)
+    {
+        if (active || flip == flipped) return;
+        System.Array.Reverse(weavePoints);
+        flipped = flip;
     }
 
     private void OnDrawGizmos()
