@@ -8507,7 +8507,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameManager
   minigamesToWin: 5
-  victorySceneName: ConnerTestMiniGame3
+  victorySceneName: MinigameThree
   victoryDelay: 1.5
   stopWatch: {fileID: 1753751193}
 --- !u!114 &2099479613

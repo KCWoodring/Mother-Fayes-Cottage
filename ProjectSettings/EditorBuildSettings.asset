@@ -15,8 +15,8 @@ EditorBuildSettings:
     path: Assets/Scenes/MinigameTwo.unity
     guid: 63e1caf3e2513da499e62b37f186af90
   - enabled: 1
-    path: Assets/Scenes/ConnerTestMiniGame3.unity
-    guid: 6be77f24e5277c643948a076fc15a14a
+    path: Assets/Scenes/MinigameThree.unity
+    guid: eaf5657a4564f1844973c8fe368d37b2
   - enabled: 1
     path: Assets/Scenes/WinScene.unity
     guid: 452bee0d0c887b54e9ec94e5cd3a0d91

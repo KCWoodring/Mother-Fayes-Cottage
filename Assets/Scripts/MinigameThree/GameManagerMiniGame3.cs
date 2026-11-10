@@ -51,6 +51,9 @@ public class GameManagerMiniGame3 : MonoBehaviour
     public float gotchaDelay = 2f;
     public string nextSceneName;
     public bool allowDogInStartingRoom = true;
+    public AudioSource barkLeft;
+    public AudioSource barkRight;
+    public AudioSource barkCenter;
 
     private int currentRoom;
     private int dogRoom;
@@ -202,6 +205,7 @@ public class GameManagerMiniGame3 : MonoBehaviour
         if (currentRoom == dogRoom)
         {
             spotArmed = true;
+            barkCenter.Play();
             hintRoutine = StartCoroutine(FlashSpot(rooms[dogRoom].hidingSpots[dogSpot].button));
         }
         else
@@ -236,6 +240,8 @@ public class GameManagerMiniGame3 : MonoBehaviour
         for (int i = 0; i < blinkCount; i++)
         {
             obj.SetActive(true);
+            if (hintTopLeft != null) barkLeft.Play();
+            if (hintTopRight != null) barkRight.Play();
             yield return new WaitForSecondsRealtime(blinkInterval);
             obj.SetActive(false);
             yield return new WaitForSecondsRealtime(blinkInterval);
