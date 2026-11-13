@@ -10,11 +10,17 @@ public class DoneButton : MonoBehaviour
     [SerializeField] private CookingManager cookingManager;
     [SerializeField] private PuppyAttention puppy;
     [SerializeField] private TMP_Text label;
+    [SerializeField] private TMP_Text burnLabel;
     [SerializeField] private GameObject meatTimer;
     [SerializeField] private Color idleColor = Color.white;
     [SerializeField] private Color flashColor = Color.green;
+    [SerializeField] private Color flashBurnColor = Color.red;
     [SerializeField] private float flashSpeed = 2f;
     [SerializeField] private string victorySceneName = "MinigameTwo";
+
+    [SerializeField] private GameObject meatBurningtxt;
+    [SerializeField] private GameObject cookStationtxt;
+    [SerializeField] private GameObject prepStationtxt;
 
 
     private InputAction clickAction;
@@ -29,6 +35,7 @@ public class DoneButton : MonoBehaviour
         buttonCollider = GetComponent<Collider>();
         cam = Camera.main;
         label.color = idleColor;
+        meatBurningtxt.SetActive(false);
     }
 
     private void Update()
@@ -48,9 +55,16 @@ public class DoneButton : MonoBehaviour
         if (label == null) return;
 
         if (IsDoneReady())
+        {
             label.color = Color.Lerp(idleColor, flashColor, Mathf.PingPong(Time.time * flashSpeed, 1f));
+            burnLabel.color = Color.Lerp(idleColor, flashBurnColor, Mathf.PingPong(Time.time * flashSpeed, 1f));
+        }
+
         else
+        {
             label.color = idleColor;
+            burnLabel.color = idleColor;
+        }
     }
 
     private void PressDone()
@@ -66,10 +80,17 @@ public class DoneButton : MonoBehaviour
         cookingManager.BeginRecipe();
         meatTimer.SetActive(false);
         meatCooking.gameObject.SetActive(false);
+        meatBurningtxt.SetActive(false);
+        cookStationtxt.SetActive(true);
+        prepStationtxt.SetActive(true);
     }
     private bool IsDoneReady()
     {
+
         bool meatReady = meatCooking.isCooking && meatCooking.state == MeatCooking.CookState.Brown;
+        meatBurningtxt.SetActive(meatReady);
+        cookStationtxt.SetActive(!meatReady);
+        prepStationtxt.SetActive(!meatReady);
         return meatReady || cookingManager.IsFinished;
     }
     private bool CanPress()
