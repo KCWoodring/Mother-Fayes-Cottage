@@ -35,6 +35,8 @@ public class WeavePoles : MonoBehaviour
         rightHold = rightArrow.GetComponent<HoldButtonImage>();
         leftArrow.gameObject.SetActive(false);
         rightArrow.gameObject.SetActive(false);
+        leftArrow.color = Color.white;
+        rightArrow.color = Color.white;
     }
     public void BeginMinigame()
     {
