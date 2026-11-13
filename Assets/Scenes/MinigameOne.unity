@@ -2073,7 +2073,8 @@ MonoBehaviour:
   meatTimer: {fileID: 173754787}
   idleColor: {r: 1, g: 1, b: 1, a: 1}
   flashColor: {r: 0, g: 1, b: 0, a: 1}
-  flashBurnColor: {r: 0.79215693, g: 0.43137258, b: 0.43137258, a: 1}
+  idleBurnColor: {r: 0.7921569, g: 0.43137255, b: 0.43137255, a: 1}
+  flashBurnColor: {r: 0.9150943, g: 0.15107687, b: 0.15107687, a: 1}
   flashSpeed: 2
   victorySceneName: MinigameTwo
   meatBurningtxt: {fileID: 1548564487}

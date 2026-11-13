@@ -14,6 +14,7 @@ public class DoneButton : MonoBehaviour
     [SerializeField] private GameObject meatTimer;
     [SerializeField] private Color idleColor = Color.white;
     [SerializeField] private Color flashColor = Color.green;
+    [SerializeField] private Color idleBurnColor = Color.red;
     [SerializeField] private Color flashBurnColor = Color.red;
     [SerializeField] private float flashSpeed = 2f;
     [SerializeField] private string victorySceneName = "MinigameTwo";
@@ -57,13 +58,13 @@ public class DoneButton : MonoBehaviour
         if (IsDoneReady())
         {
             label.color = Color.Lerp(idleColor, flashColor, Mathf.PingPong(Time.time * flashSpeed, 1f));
-            burnLabel.color = Color.Lerp(idleColor, flashBurnColor, Mathf.PingPong(Time.time * flashSpeed, 1f));
+            burnLabel.color = Color.Lerp(idleBurnColor, flashBurnColor, Mathf.PingPong(Time.time * flashSpeed, 1f));
         }
 
         else
         {
             label.color = idleColor;
-            burnLabel.color = idleColor;
+            burnLabel.color = idleBurnColor;
         }
     }
 
