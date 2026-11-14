@@ -2729,7 +2729,7 @@ MonoBehaviour:
   blinkCount: 3
   blinkInterval: 0.25
   gotchaDelay: 2
-  nextSceneName: WinScene
+  nextSceneName: MinigameFour
   allowDogInStartingRoom: 1
   barkLeft: {fileID: 410469047}
   barkRight: {fileID: 1939350562}
