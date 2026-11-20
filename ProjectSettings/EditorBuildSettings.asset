@@ -27,10 +27,16 @@ EditorBuildSettings:
     path: Assets/Scenes/MiniGame1Lose.unity
     guid: ae515c88193ebd340830a5924ce4116a
   - enabled: 1
-    path: Assets/Scenes/Minigame4LoseScene.unity
-    guid: 00fd1dad9088f8544b2062c2a1ecb649
+    path: Assets/Scenes/MiniGame2Win.unity
+    guid: cd2950c55cadede41b06f001090e06c0
   - enabled: 1
-    path: Assets/Scenes/MiniGame2LoseScene.unity
-    guid: 7740d3a295c205d48a99c5e2a9b488b6
+    path: Assets/Scenes/MiniGame2Lose.unity
+    guid: 031899d5e7f40ce4bae88f7d2ddd18a2
+  - enabled: 1
+    path: Assets/Scenes/MiniGame3AND4Win.unity
+    guid: 8e2da6abf33673f4885f4674603cbbf6
+  - enabled: 1
+    path: Assets/Scenes/MiniGame3AND4Lose.unity
+    guid: 3fefa0592adc9cc4d8312eba5b300015
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
