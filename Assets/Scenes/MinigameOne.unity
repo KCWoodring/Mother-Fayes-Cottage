@@ -2076,7 +2076,7 @@ MonoBehaviour:
   idleBurnColor: {r: 0.7921569, g: 0.43137255, b: 0.43137255, a: 1}
   flashBurnColor: {r: 0.9150943, g: 0.15107687, b: 0.15107687, a: 1}
   flashSpeed: 2
-  victorySceneName: MinigameTwo
+  victorySceneName: MiniGame1Win
   meatBurningtxt: {fileID: 1548564487}
   cookStationtxt: {fileID: 135901413}
   prepStationtxt: {fileID: 336114522}

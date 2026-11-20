@@ -74,7 +74,7 @@ public class MeatCooking : MonoBehaviour
                 break;
             case CookState.Burnt:
                 meatRenderer.material = burntMaterial;
-                SceneManager.LoadScene("GameOverScene");
+                SceneManager.LoadScene("MiniGame1Lose");
                 isCooking = false; // nothing left to cook
                 break;
         }
