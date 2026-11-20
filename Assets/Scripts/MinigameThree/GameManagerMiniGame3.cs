@@ -55,6 +55,8 @@ public class GameManagerMiniGame3 : MonoBehaviour
     public AudioSource barkRight;
     public AudioSource barkCenter;
 
+    public GameObject instructionsPanel;
+    public GameObject instructionsButon;
     private int currentRoom;
     private int dogRoom;
     private bool gameOver;
@@ -82,6 +84,9 @@ public class GameManagerMiniGame3 : MonoBehaviour
         dogRoom = hidingSpotsChoices[Random.Range(0, hidingSpotsChoices.Count)];
         dogSpot = Random.Range(0, rooms[dogRoom].hidingSpots.Length);
 
+        instructionsPanel.SetActive(true);
+        instructionsButon.SetActive(true);
+
         Debug.Log("Dog is hiding in: " + rooms[dogRoom].name + " (spot " + dogSpot + ")");
     }
 
@@ -100,6 +105,14 @@ public class GameManagerMiniGame3 : MonoBehaviour
 
         Button spot = rooms[dogRoom].hidingSpots[dogSpot].button;
         spot.onClick.AddListener(OnDogFound);
+    }
+    public void StartGame()
+    {
+        instructionsPanel.SetActive(false);
+    }
+    public void ShowInstructions()
+    {
+        instructionsPanel.SetActive(true);
     }
     //Map
     public void OnMapHover(bool hovering)

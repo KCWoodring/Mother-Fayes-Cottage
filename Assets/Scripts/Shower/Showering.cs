@@ -14,16 +14,25 @@ public class Showering : MonoBehaviour
     public SudSpot[] spots;
     float timeLeft;
     bool done;
+    public bool isRunning;
+
+    public GameObject instructionsPanel;
+    public GameObject instructionsButon;
 
     void Start()
     {
         spots = dog.GetComponentsInChildren<SudSpot>();
         timeLeft = timeLimit;
+        isRunning = false;
+        done = false;
+        instructionsButon.SetActive(true);
+        instructionsPanel.SetActive(true);
     }
 
     void Update()
     {
         if (done) return;
+        if (isRunning == false) return;
 
         timeLeft -= Time.deltaTime;
         int t = (int)Mathf.Max(timeLeft, 0);
@@ -32,6 +41,15 @@ public class Showering : MonoBehaviour
         if (AllClean()) { done = true; OnWin(); }
         else if (timeLeft <= 0f) { done = true; OnLose(); }
     }
+    public void StartGame()
+    {
+        instructionsPanel.SetActive(false);
+        isRunning = true;
+    }
+    public void ShowInstructions()
+    {
+        instructionsPanel.SetActive(true);
+    }
 
     bool AllClean()
     {
@@ -39,8 +57,6 @@ public class Showering : MonoBehaviour
             if (suds != null) return false;
         return true;
     }
-
-    
     void OnWin() 
     { 
         SceneManager.LoadScene(winScreen);

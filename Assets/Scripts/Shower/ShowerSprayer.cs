@@ -21,6 +21,8 @@ public class ShowerSprayer : MonoBehaviour
     public Sprite ShowerHOn;
     public Sprite ShowerHOff;
 
+    [SerializeField] Showering showeringScript;
+
     float nextBlast;
 
     void OnEnable() => Cursor.visible = false;  
@@ -30,8 +32,9 @@ public class ShowerSprayer : MonoBehaviour
     {
         var mouse = Mouse.current;
 
-        
         transform.position = mouse.position.ReadValue();
+
+        if (showeringScript.isRunning == false) return;
 
         bool spray = mouse.leftButton.isPressed;
         bool blast = mouse.rightButton.isPressed;
