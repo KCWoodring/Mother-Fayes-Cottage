@@ -15,6 +15,9 @@ public class ShowerSprayer : MonoBehaviour
     public float blastInterval = 0.12f;
     public Image ShowerHead;
 
+    public Animator showerAnimator;
+    static readonly int BlastHash = Animator.StringToHash("Blast");
+
     public Sprite ShowerHOn;
     public Sprite ShowerHOff;
 
@@ -32,6 +35,13 @@ public class ShowerSprayer : MonoBehaviour
 
         bool spray = mouse.leftButton.isPressed;
         bool blast = mouse.rightButton.isPressed;
+
+        showerAnimator.enabled = blast;
+        showerAnimator.SetBool(BlastHash, blast);
+
+        if (!blast)
+            ShowerHead.sprite = spray ? ShowerHOn : ShowerHOff;
+
         if (!spray && !blast) return;
 
         var hits = Physics2D.OverlapCircleAll(transform.position, radius, sudMask);

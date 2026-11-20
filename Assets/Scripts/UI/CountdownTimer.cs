@@ -35,7 +35,7 @@ public class CountdownTimer : MonoBehaviour
     }
     void TimerFinished()
     {
-        SceneManager.LoadScene("GameOverScene");
+        SceneManager.LoadScene("MiniGame1Lose");
     }
     public void StartTimer()
     {

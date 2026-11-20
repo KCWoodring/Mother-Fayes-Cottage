@@ -6863,7 +6863,7 @@ MonoBehaviour:
   penaltyColor: {r: 1, g: 0, b: 0, a: 1}
   flashDuration: 1
   timeLimit: 90
-  loserSceneName: MiniGame2LoseScene
+  loserSceneName: MiniGame2Lose
 --- !u!1 &1758101036
 GameObject:
   m_ObjectHideFlags: 0
@@ -8507,7 +8507,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameManager
   minigamesToWin: 5
-  victorySceneName: MinigameThree
+  victorySceneName: MiniGame2Win
   victoryDelay: 1.5
   stopWatch: {fileID: 1753751193}
 --- !u!114 &2099479613

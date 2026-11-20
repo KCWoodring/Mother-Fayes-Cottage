@@ -21,10 +21,10 @@ EditorBuildSettings:
     path: Assets/Scenes/MinigameFour.unity
     guid: fbce2cd256a0d2d4388f8365ada5bdc5
   - enabled: 1
-    path: Assets/Scenes/WinScene.unity
+    path: Assets/Scenes/MiniGame1Win.unity
     guid: 452bee0d0c887b54e9ec94e5cd3a0d91
   - enabled: 1
-    path: Assets/Scenes/GameOverScene.unity
+    path: Assets/Scenes/MiniGame1Lose.unity
     guid: ae515c88193ebd340830a5924ce4116a
   - enabled: 1
     path: Assets/Scenes/Minigame4LoseScene.unity
