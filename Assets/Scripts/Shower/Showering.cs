@@ -1,5 +1,6 @@
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 
 public class Showering : MonoBehaviour
@@ -7,6 +8,8 @@ public class Showering : MonoBehaviour
     public float timeLimit = 300f;
     public Transform dog;          
     public TMP_Text timerText;
+    public string winScreen;
+    public string loseScreen;
 
     public SudSpot[] spots;
     float timeLeft;
@@ -38,6 +41,13 @@ public class Showering : MonoBehaviour
     }
 
     
-    void OnWin() { Debug.Log("Dog is clean!"); }
-    void OnLose() { Debug.Log("Out of time!"); }
+    void OnWin() 
+    { 
+        SceneManager.LoadScene(winScreen);
+    }
+
+    void OnLose() 
+    { 
+        SceneManager.LoadScene(loseScreen);
+    }
 }
